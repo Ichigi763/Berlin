@@ -1596,7 +1596,7 @@ function library:AddWindow(title, options)
 						return keybind_data, keybind
 					end
 
-					function tab_data:AddDropdown(dropdown_name, callback)
+					function tab_data:AddDropdown(dropdown_name, callback, options_array)
 						local dropdown_data = {}
 						dropdown_name = tostring(dropdown_name or "New Dropdown")
 						callback = typeof(callback) == "function" and callback or function()end
@@ -1642,7 +1642,7 @@ function library:AddWindow(title, options)
 							local object_data = {}
 							n = tostring(n or "New Object")
 
-local object = prefabs:FindFirstChild("DropdownButton"):Clone()
+							local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 
 							object.Parent = objects
 							object.Text = n
@@ -2267,13 +2267,17 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 
 						local function updateFolderSize()
 							if is_open then
-								new_folder.Size = UDim2.new(1, 0, 0, f_layout.AbsoluteContentSize.Y + 40)
+								local h = f_layout.AbsoluteContentSize.Y
+								new_folder.Size = UDim2.new(1, 0, 0, h + 38)
+								new_folder.ClipsDescendants = false
 							else
 								new_folder.Size = UDim2.new(1, 0, 0, 32)
+								new_folder.ClipsDescendants = true
 							end
 						end
 
 						f_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateFolderSize)
+						task.defer(updateFolderSize)
 
 						local function toggleFolder()
 							is_open = not is_open
