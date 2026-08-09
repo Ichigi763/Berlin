@@ -1199,15 +1199,21 @@ function library:AddWindow(title, options)
 				local function show()
 					if dropdown_open then return end
 					for i, v in pairs(tab_buttons:GetChildren()) do
-						if not (v:IsA("UIListLayout")) then
-							v:GetChildren()[1].ImageColor3 = Color3.fromRGB(52, 53, 56)
+						if v:IsA("TextButton") then
+							local bgImage = v:FindFirstChildOfClass("ImageLabel")
+							if bgImage and bgImage.Name ~= "Icon" then
+								bgImage.ImageColor3 = Color3.fromRGB(52, 53, 56)
+							end
 						end
 					end
 					for i, v in pairs(tabs:GetChildren()) do
 						v.Visible = false
 					end
 
-					new_button:GetChildren()[1].ImageColor3 = Color3.fromRGB(73, 75, 79)
+					local bgImage = new_button:FindFirstChildOfClass("ImageLabel")
+					if bgImage and bgImage.Name ~= "Icon" then
+						bgImage.ImageColor3 = Color3.fromRGB(73, 75, 79)
+					end
 					new_tab.Visible = true
 				end
 
