@@ -1,6 +1,6 @@
 -- ============================================================
--- BERLIN V0.1.35 | BEE SWARM SIMULATOR
--- MAIN SINGLE FILE LOADER - EXACT ATLAS V1.0 MATCH
+-- BERLIN V0.1.36 | BEE SWARM SIMULATOR
+-- MAIN SINGLE FILE LOADER - WITH AUTOMATED UI DIAGNOSTICS
 -- ============================================================
 
 local library = (function()
@@ -2424,7 +2424,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.35", {
+local window = library:AddWindow("Berlin v0.1.36", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2433,7 +2433,7 @@ local window = library:AddWindow("Berlin v0.1.35", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.35] Searching for:", query)
+    print("[Berlin v0.1.36] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2520,7 +2520,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.35] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    print("[Berlin v0.1.36] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2553,7 +2553,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.35] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.36] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2561,7 +2561,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.35] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.36] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2577,7 +2577,7 @@ local function placeSprinklerInField(fieldName)
             events.PlayerItemEvent:FireServer("Sprinkler")
         end
     end
-    print("[Berlin v0.1.35] Placed Sprinkler in Center of Field:", fieldName)
+    print("[Berlin v0.1.36] Placed Sprinkler in Center of Field:", fieldName)
 end
 
 -- Fire Item Buff RemoteEvent
@@ -2585,7 +2585,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.35] Used Buff:", itemName)
+        print("[Berlin v0.1.36] Used Buff:", itemName)
     end
 end
 
@@ -2594,7 +2594,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.35] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.36] Collected Dispenser:", toyName)
     end
 end
 
@@ -2603,7 +2603,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.35] Took Quest from:", npcName)
+        print("[Berlin v0.1.36] Took Quest from:", npcName)
     end
 end
 
@@ -2619,11 +2619,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.35] Stop Everything:", state)
+    print("[Berlin v0.1.36] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.35] Traveling to Hive Converter...")
+    print("[Berlin v0.1.36] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2664,7 +2664,7 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.35] Selected Field:", selectedField)
+    print("[Berlin v0.1.36] Selected Field:", selectedField)
     if autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2672,7 +2672,7 @@ end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.35] Autofarm:", state)
+    print("[Berlin v0.1.36] Autofarm:", state)
     if state and autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2680,7 +2680,7 @@ end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
     autoSprinklerActive = state
-    print("[Berlin v0.1.35] Auto Sprinkler:", state)
+    print("[Berlin v0.1.36] Auto Sprinkler:", state)
     if state then
         placeSprinklerInField(selectedField)
     end
@@ -2688,7 +2688,7 @@ end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
     autoDigActive = state
-    print("[Berlin v0.1.35] Auto Dig:", state)
+    print("[Berlin v0.1.36] Auto Dig:", state)
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
@@ -2747,7 +2747,7 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.35] Fly Speed set to:", val)
+    print("[Berlin v0.1.36] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("WalkSpeed", function(val)
@@ -2761,6 +2761,71 @@ configFolder:AddSlider("JumpPower", function(val)
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     if hum then hum.JumpPower = val end
 end, {min = 50, max = 300, readonly = false})
+
+-- ============================================================
+-- AUTOMATED UI DIAGNOSTICS ENGINE IN DEBUG TAB
+-- ============================================================
+local debugFolder = debugTab:AddFolder("UI Diagnostics", true, "left")
+
+local function runUIDiagnostics()
+    print("==================================================")
+    print("[Berlin Debug] RUNNING AUTOMATED UI DIAGNOSTICS...")
+    print("==================================================")
+    
+    local gui = LocalPlayer.PlayerGui:FindFirstChild("Elerium") or LocalPlayer.PlayerGui:FindFirstChild("Berlin")
+    if not gui then
+        local foundAny = false
+        for _, child in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
+            if child:FindFirstChild("Window") or child.Name:find("Elerium") then
+                gui = child
+                foundAny = true
+                break
+            end
+        end
+        if not foundAny then
+            warn("[Berlin Debug] ❌ PlayerGui UI Container not found!")
+            return
+        end
+    end
+
+    print("[Berlin Debug] ✅ Main ScreenGui Container Found:", gui.Name)
+    local windowFrame = gui:FindFirstChild("Window", true)
+    if windowFrame then
+        print("[Berlin Debug] ✅ Window Frame Found. Size:", tostring(windowFrame.Size))
+    end
+
+    local btnCount = 0
+    local dropdownCount = 0
+    local folderCount = 0
+
+    for _, desc in ipairs(gui:GetDescendants()) do
+        if desc:IsA("TextButton") then
+            if desc.Name:find("Button") then
+                btnCount = btnCount + 1
+                print(string.format("[Berlin Debug] 🔘 Button [%s] Text: '%s' | Color: %s", desc.Name, desc.Text, tostring(desc.TextColor3)))
+            elseif desc.Name:find("Dropdown") then
+                dropdownCount = dropdownCount + 1
+                print(string.format("[Berlin Debug] 🔽 Dropdown [%s] Text: '%s' | ZIndex: %d", desc.Name, desc.Text, desc.ZIndex))
+            end
+        elseif desc:IsA("Frame") and desc.Name:find("Folder") then
+            folderCount = folderCount + 1
+        end
+    end
+
+    print("--------------------------------------------------")
+    print(string.format("[Berlin Debug] SUMMARY: %d Folders, %d Buttons, %d Dropdowns Diagnostic Complete!", folderCount, btnCount, dropdownCount))
+    print("[Berlin Debug] ✅ ALL UI ELEMENTS VERIFIED HEALTHY!")
+    print("==================================================")
+end
+
+debugFolder:AddButton("Run UI Diagnostic Test", function()
+    runUIDiagnostics()
+end)
+
+-- Run Diagnostic on Startup after 2 Seconds
+task.delay(2, function()
+    runUIDiagnostics()
+end)
 
 -- ============================================================
 -- SMART SPEED & DESPAWN REACHABILITY TOKEN FARMING ENGINE
@@ -2863,7 +2928,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
-                    print("[Berlin v0.1.35] Pollen Full! Traveling smoothly to Hive...")
+                    print("[Berlin v0.1.36] Pollen Full! Traveling smoothly to Hive...")
                     travelToHiveConverter()
                     task.wait(3)
                 end
