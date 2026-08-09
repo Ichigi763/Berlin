@@ -7,7 +7,7 @@ local eleriumUrl = "https://raw.githubusercontent.com/Ichigi763/Berlin/main/eler
 local library = loadstring(game:HttpGet(eleriumUrl, false))()
 
 -- Create Red & Grey Elerium v2 Window (Exact Width fitted to sidebar + content)
-local window = library:AddWindow("Berlin v0.1", {
+local window = library:AddWindow("Berlin v0.1.1", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
