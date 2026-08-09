@@ -1,6 +1,6 @@
 -- ============================================================
--- BERLIN V0.1.38 | BEE SWARM SIMULATOR
--- MAIN SINGLE FILE LOADER - WITH STABLE SPEED LOCK & LOOK-AHEAD TOKEN CHAINING
+-- BERLIN V0.1.39 | BEE SWARM SIMULATOR
+-- MAIN SINGLE FILE LOADER - WITH SEPARATE FLY & WALK SPEED SLIDERS & CLEAN TEXT
 -- ============================================================
 
 local library = (function()
@@ -1437,108 +1437,114 @@ function library:AddWindow(title, options)
 
 					function tab_data:AddSlider(slider_text, callback, slider_options)
 						local slider_data = {}
-
 						slider_text = tostring(slider_text or "New Slider")
 						callback = typeof(callback) == "function" and callback or function()end
 						slider_options = typeof(slider_options) == "table" and slider_options or {}
-						slider_options = {
-							["min"] = slider_options.min or 0,
-							["max"] = slider_options.max or 100,
-							["readonly"] = slider_options.readonly or false,
-						}
+						local minv = slider_options.min or 0
+						local maxv = slider_options.max or 100
+						local readonly = slider_options.readonly or false
 
-						local slider = prefabs:FindFirstChild("Slider"):Clone()
+						local baseZ = (windows * 10) + 20
 
+						local slider = Instance.new("Frame")
+						slider.Name = slider_text .. "Slider"
 						slider.Parent = new_tab
-						slider.ZIndex = slider.ZIndex + (windows * 10)
+						slider.Size = UDim2.new(1, 0, 0, 26)
+						slider.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
+						slider.BorderSizePixel = 0
+						slider.ClipsDescendants = true
+						slider.ZIndex = baseZ
 
-						local title = slider:FindFirstChild("Title")
-						local indicator = slider:FindFirstChild("Indicator")
-						local value = slider:FindFirstChild("Value")
-						title.ZIndex = title.ZIndex + (windows * 10)
-						indicator.ZIndex = indicator.ZIndex + (windows * 10)
-						value.ZIndex = value.ZIndex + (windows * 10)
+						local sCorner = Instance.new("UICorner")
+						sCorner.CornerRadius = UDim.new(0, 5)
+						sCorner.Parent = slider
 
+						-- Background Fill Bar (drawn BEHIND text)
+						local indicator = Instance.new("Frame")
+						indicator.Name = "Indicator"
+						indicator.Parent = slider
+						indicator.Size = UDim2.new(0, 0, 1, 0)
+						indicator.Position = UDim2.new(0, 0, 0, 0)
+						indicator.BackgroundColor3 = options.main_color or Color3.fromRGB(180, 30, 40)
+						indicator.BackgroundTransparency = 0.4
+						indicator.BorderSizePixel = 0
+						indicator.ZIndex = baseZ + 1
+
+						local indCorner = Instance.new("UICorner")
+						indCorner.CornerRadius = UDim.new(0, 5)
+						indCorner.Parent = indicator
+
+						-- Title Text (drawn ON TOP of slider fill!)
+						local title = Instance.new("TextLabel")
+						title.Name = "Title"
+						title.Parent = slider
+						title.Size = UDim2.new(1, -75, 1, 0)
+						title.Position = UDim2.new(0, 10, 0, 0)
+						title.BackgroundTransparency = 1
+						title.Font = Enum.Font.GothamBold
+						title.TextSize = 13
+						title.TextColor3 = Color3.fromRGB(255, 255, 255)
+						title.TextXAlignment = Enum.TextXAlignment.Left
 						title.Text = slider_text
+						title.ZIndex = baseZ + 2
 
-						do -- Slider Math
-							local Entered = false
-							slider.MouseEnter:Connect(function()
-								Entered = true
-								Window.Draggable = false
-							end)
-							slider.MouseLeave:Connect(function()
-								Entered = false
-								Window.Draggable = true
-							end)
+						-- Value Display Text (right-aligned)
+						local value = Instance.new("TextLabel")
+						value.Name = "Value"
+						value.Parent = slider
+						value.Size = UDim2.new(0, 65, 1, 0)
+						value.Position = UDim2.new(1, -70, 0, 0)
+						value.BackgroundTransparency = 1
+						value.Font = Enum.Font.GothamBold
+						value.TextSize = 13
+						value.TextColor3 = Color3.fromRGB(240, 240, 240)
+						value.TextXAlignment = Enum.TextXAlignment.Right
+						value.Text = "[ " .. tostring(minv) .. " ]"
+						value.ZIndex = baseZ + 2
 
-							local Held = false
-							UIS.InputBegan:Connect(function(inputObject)
-								if inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
-									Held = true
+						-- Interactive Drag Logic
+						local Entered = false
+						slider.MouseEnter:Connect(function()
+							Entered = true
+							Window.Draggable = false
+						end)
+						slider.MouseLeave:Connect(function()
+							Entered = false
+							Window.Draggable = true
+						end)
 
-									spawn(function() -- Loop check
-										if Entered and not slider_options.readonly then
-											while Held and (not dropdown_open) do
-												local mouse_location = gMouse()
-												local x = (slider.AbsoluteSize.X - (slider.AbsoluteSize.X - ((mouse_location.X - slider.AbsolutePosition.X)) + 1)) / slider.AbsoluteSize.X
-
-												local min = 0
-												local max = 1
-
-												local size = min
-												if x >= min and x <= max then
-													size = x
-												elseif x < min then
-													size = min
-												elseif x > max then
-													size = max
-												end
-
-												Resize(indicator, {Size = UDim2.new(size or min, 0, 0, 20)}, options.tween_time)
-												local p = math.floor((size or min) * 100)
-
-												local maxv = slider_options.max
-												local minv = slider_options.min
-												local diff = maxv - minv
-
-												local sel_value = math.floor(((diff / 100) * p) + minv)
-
-												value.Text = tostring(sel_value)
-												pcall(callback, sel_value)
-
-												RS.Heartbeat:Wait()
-											end
-										end
-									end)
-								end
-							end)
-							UIS.InputEnded:Connect(function(inputObject)
-								if inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
-									Held = false
-								end
-							end)
-
-							function slider_data:Set(new_value)
-								new_value = tonumber(new_value) or 0
-								new_value = (((new_value >= 0 and new_value <= 100) and new_value) / 100)
-
-								Resize(indicator, {Size = UDim2.new(new_value or 0, 0, 0, 20)}, options.tween_time)
-								local p = math.floor((new_value or 0) * 100)
-
-								local maxv = slider_options.max
-								local minv = slider_options.min
-								local diff = maxv - minv
-
-								local sel_value = math.floor(((diff / 100) * p) + minv)
-
-								value.Text = tostring(sel_value)
-								pcall(callback, sel_value)
+						local Held = false
+						UIS.InputBegan:Connect(function(inputObject)
+							if inputObject.UserInputType == Enum.UserInputType.MouseButton1 and Entered and not readonly then
+								Held = true
+								task.spawn(function()
+									while Held do
+										local mouseLoc = gMouse()
+										local relX = math.clamp((mouseLoc.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
+										local currentVal = math.floor(minv + (relX * (maxv - minv)))
+										indicator.Size = UDim2.new(relX, 0, 1, 0)
+										value.Text = "[ " .. tostring(currentVal) .. " ]"
+										pcall(callback, currentVal)
+										RS.Heartbeat:Wait()
+									end
+								end)
 							end
+						end)
+						UIS.InputEnded:Connect(function(inputObject)
+							if inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
+								Held = false
+							end
+						end)
 
-							slider_data:Set(slider_options["min"])
+						function slider_data:Set(val)
+							val = math.clamp(tonumber(val) or minv, minv, maxv)
+							local relX = (maxv > minv) and ((val - minv) / (maxv - minv)) or 0
+							indicator.Size = UDim2.new(relX, 0, 1, 0)
+							value.Text = "[ " .. tostring(math.floor(val)) .. " ]"
+							pcall(callback, math.floor(val))
 						end
 
+						slider_data:Set(minv)
 						return slider_data, slider
 					end
 
@@ -2461,7 +2467,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.38", {
+local window = library:AddWindow("Berlin v0.1.39", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2470,7 +2476,7 @@ local window = library:AddWindow("Berlin v0.1.38", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.38] Searching for:", query)
+    print("[Berlin v0.1.39] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2498,7 +2504,8 @@ local LocalPlayer = Players.LocalPlayer
 
 local startTime = os.time()
 local stopEverything = false
-local flySpeed = 75 -- Default Fly & Walk Speed
+local flySpeed = 75 -- Separate Speed for Flying / Teleporting
+local walkSpeed = 60 -- Separate Speed for Walking on Field
 local speedLockEnabled = true -- 100% Stable WalkSpeed Lock
 
 -- Complete List of 22 Bee Swarm Simulator Fields
@@ -2533,8 +2540,8 @@ local function enforceStableSpeed()
     if not speedLockEnabled then return end
     local char = LocalPlayer.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum and hum.WalkSpeed ~= flySpeed then
-        hum.WalkSpeed = flySpeed
+    if hum and hum.WalkSpeed ~= walkSpeed then
+        hum.WalkSpeed = walkSpeed
     end
 end
 
@@ -2574,7 +2581,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.38] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    print("[Berlin v0.1.39] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2607,7 +2614,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.38] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.39] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2615,7 +2622,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.38] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.39] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2631,7 +2638,7 @@ local function placeSprinklerInField(fieldName)
             events.PlayerItemEvent:FireServer("Sprinkler")
         end
     end
-    print("[Berlin v0.1.38] Placed Sprinkler in Center of Field:", fieldName)
+    print("[Berlin v0.1.39] Placed Sprinkler in Center of Field:", fieldName)
 end
 
 -- Fire Item Buff RemoteEvent
@@ -2639,7 +2646,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.38] Used Buff:", itemName)
+        print("[Berlin v0.1.39] Used Buff:", itemName)
     end
 end
 
@@ -2648,7 +2655,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.38] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.39] Collected Dispenser:", toyName)
     end
 end
 
@@ -2657,7 +2664,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.38] Took Quest from:", npcName)
+        print("[Berlin v0.1.39] Took Quest from:", npcName)
     end
 end
 
@@ -2673,11 +2680,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.38] Stop Everything:", state)
+    print("[Berlin v0.1.39] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.38] Traveling to Hive Converter...")
+    print("[Berlin v0.1.39] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2718,7 +2725,7 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.38] Selected Field:", selectedField)
+    print("[Berlin v0.1.39] Selected Field:", selectedField)
     if autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2726,7 +2733,7 @@ end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.38] Autofarm:", state)
+    print("[Berlin v0.1.39] Autofarm:", state)
     if state and autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2734,7 +2741,7 @@ end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
     autoSprinklerActive = state
-    print("[Berlin v0.1.38] Auto Sprinkler:", state)
+    print("[Berlin v0.1.39] Auto Sprinkler:", state)
     if state then
         placeSprinklerInField(selectedField)
     end
@@ -2742,7 +2749,7 @@ end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
     autoDigActive = state
-    print("[Berlin v0.1.38] Auto Dig:", state)
+    print("[Berlin v0.1.39] Auto Dig:", state)
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
@@ -2796,19 +2803,24 @@ questFolder:AddButton("Take All Available Quests", function()
     takeQuest("Polar Bear")
 end)
 
--- CONFIG TAB
+-- CONFIG TAB (SEPARATE FLY AND WALK SPEED SLIDERS)
 local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSwitch("Stable Speed Lock", function(state)
     speedLockEnabled = state
-    print("[Berlin v0.1.38] Stable Speed Lock:", state)
+    print("[Berlin v0.1.39] Stable Speed Lock:", state)
 end)
 
-configFolder:AddSlider("Fly & Walk Speed", function(val)
+configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    enforceStableSpeed()
-    print("[Berlin v0.1.38] Locked Speed set to:", val)
+    print("[Berlin v0.1.39] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
+
+configFolder:AddSlider("Walk Speed", function(val)
+    walkSpeed = val
+    enforceStableSpeed()
+    print("[Berlin v0.1.39] Walk Speed set to:", val)
+end, {min = 16, max = 300, readonly = false})
 
 configFolder:AddSlider("JumpPower", function(val)
     local char = LocalPlayer.Character
@@ -2984,7 +2996,7 @@ task.spawn(function()
                 end
 
                 -- Compute Multi-Step Look-Ahead Token Chain
-                local chain = getOptimizedTokenChain(hrp.Position, center, flySpeed)
+                local chain = getOptimizedTokenChain(hrp.Position, center, walkSpeed)
 
                 if #chain > 0 then
                     local currentTarget = chain[1]
@@ -3007,7 +3019,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
-                    print("[Berlin v0.1.38] Pollen Full! Traveling smoothly to Hive...")
+                    print("[Berlin v0.1.39] Pollen Full! Traveling smoothly to Hive...")
                     travelToHiveConverter()
                     task.wait(3)
                 end

@@ -1431,108 +1431,114 @@ function library:AddWindow(title, options)
 
 					function tab_data:AddSlider(slider_text, callback, slider_options)
 						local slider_data = {}
-
 						slider_text = tostring(slider_text or "New Slider")
 						callback = typeof(callback) == "function" and callback or function()end
 						slider_options = typeof(slider_options) == "table" and slider_options or {}
-						slider_options = {
-							["min"] = slider_options.min or 0,
-							["max"] = slider_options.max or 100,
-							["readonly"] = slider_options.readonly or false,
-						}
+						local minv = slider_options.min or 0
+						local maxv = slider_options.max or 100
+						local readonly = slider_options.readonly or false
 
-						local slider = prefabs:FindFirstChild("Slider"):Clone()
+						local baseZ = (windows * 10) + 20
 
+						local slider = Instance.new("Frame")
+						slider.Name = slider_text .. "Slider"
 						slider.Parent = new_tab
-						slider.ZIndex = slider.ZIndex + (windows * 10)
+						slider.Size = UDim2.new(1, 0, 0, 26)
+						slider.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
+						slider.BorderSizePixel = 0
+						slider.ClipsDescendants = true
+						slider.ZIndex = baseZ
 
-						local title = slider:FindFirstChild("Title")
-						local indicator = slider:FindFirstChild("Indicator")
-						local value = slider:FindFirstChild("Value")
-						title.ZIndex = title.ZIndex + (windows * 10)
-						indicator.ZIndex = indicator.ZIndex + (windows * 10)
-						value.ZIndex = value.ZIndex + (windows * 10)
+						local sCorner = Instance.new("UICorner")
+						sCorner.CornerRadius = UDim.new(0, 5)
+						sCorner.Parent = slider
 
+						-- Background Fill Bar (drawn BEHIND text)
+						local indicator = Instance.new("Frame")
+						indicator.Name = "Indicator"
+						indicator.Parent = slider
+						indicator.Size = UDim2.new(0, 0, 1, 0)
+						indicator.Position = UDim2.new(0, 0, 0, 0)
+						indicator.BackgroundColor3 = options.main_color or Color3.fromRGB(180, 30, 40)
+						indicator.BackgroundTransparency = 0.4
+						indicator.BorderSizePixel = 0
+						indicator.ZIndex = baseZ + 1
+
+						local indCorner = Instance.new("UICorner")
+						indCorner.CornerRadius = UDim.new(0, 5)
+						indCorner.Parent = indicator
+
+						-- Title Text (drawn ON TOP of slider fill!)
+						local title = Instance.new("TextLabel")
+						title.Name = "Title"
+						title.Parent = slider
+						title.Size = UDim2.new(1, -75, 1, 0)
+						title.Position = UDim2.new(0, 10, 0, 0)
+						title.BackgroundTransparency = 1
+						title.Font = Enum.Font.GothamBold
+						title.TextSize = 13
+						title.TextColor3 = Color3.fromRGB(255, 255, 255)
+						title.TextXAlignment = Enum.TextXAlignment.Left
 						title.Text = slider_text
+						title.ZIndex = baseZ + 2
 
-						do -- Slider Math
-							local Entered = false
-							slider.MouseEnter:Connect(function()
-								Entered = true
-								Window.Draggable = false
-							end)
-							slider.MouseLeave:Connect(function()
-								Entered = false
-								Window.Draggable = true
-							end)
+						-- Value Display Text (right-aligned)
+						local value = Instance.new("TextLabel")
+						value.Name = "Value"
+						value.Parent = slider
+						value.Size = UDim2.new(0, 65, 1, 0)
+						value.Position = UDim2.new(1, -70, 0, 0)
+						value.BackgroundTransparency = 1
+						value.Font = Enum.Font.GothamBold
+						value.TextSize = 13
+						value.TextColor3 = Color3.fromRGB(240, 240, 240)
+						value.TextXAlignment = Enum.TextXAlignment.Right
+						value.Text = "[ " .. tostring(minv) .. " ]"
+						value.ZIndex = baseZ + 2
 
-							local Held = false
-							UIS.InputBegan:Connect(function(inputObject)
-								if inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
-									Held = true
+						-- Interactive Drag Logic
+						local Entered = false
+						slider.MouseEnter:Connect(function()
+							Entered = true
+							Window.Draggable = false
+						end)
+						slider.MouseLeave:Connect(function()
+							Entered = false
+							Window.Draggable = true
+						end)
 
-									spawn(function() -- Loop check
-										if Entered and not slider_options.readonly then
-											while Held and (not dropdown_open) do
-												local mouse_location = gMouse()
-												local x = (slider.AbsoluteSize.X - (slider.AbsoluteSize.X - ((mouse_location.X - slider.AbsolutePosition.X)) + 1)) / slider.AbsoluteSize.X
-
-												local min = 0
-												local max = 1
-
-												local size = min
-												if x >= min and x <= max then
-													size = x
-												elseif x < min then
-													size = min
-												elseif x > max then
-													size = max
-												end
-
-												Resize(indicator, {Size = UDim2.new(size or min, 0, 0, 20)}, options.tween_time)
-												local p = math.floor((size or min) * 100)
-
-												local maxv = slider_options.max
-												local minv = slider_options.min
-												local diff = maxv - minv
-
-												local sel_value = math.floor(((diff / 100) * p) + minv)
-
-												value.Text = tostring(sel_value)
-												pcall(callback, sel_value)
-
-												RS.Heartbeat:Wait()
-											end
-										end
-									end)
-								end
-							end)
-							UIS.InputEnded:Connect(function(inputObject)
-								if inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
-									Held = false
-								end
-							end)
-
-							function slider_data:Set(new_value)
-								new_value = tonumber(new_value) or 0
-								new_value = (((new_value >= 0 and new_value <= 100) and new_value) / 100)
-
-								Resize(indicator, {Size = UDim2.new(new_value or 0, 0, 0, 20)}, options.tween_time)
-								local p = math.floor((new_value or 0) * 100)
-
-								local maxv = slider_options.max
-								local minv = slider_options.min
-								local diff = maxv - minv
-
-								local sel_value = math.floor(((diff / 100) * p) + minv)
-
-								value.Text = tostring(sel_value)
-								pcall(callback, sel_value)
+						local Held = false
+						UIS.InputBegan:Connect(function(inputObject)
+							if inputObject.UserInputType == Enum.UserInputType.MouseButton1 and Entered and not readonly then
+								Held = true
+								task.spawn(function()
+									while Held do
+										local mouseLoc = gMouse()
+										local relX = math.clamp((mouseLoc.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
+										local currentVal = math.floor(minv + (relX * (maxv - minv)))
+										indicator.Size = UDim2.new(relX, 0, 1, 0)
+										value.Text = "[ " .. tostring(currentVal) .. " ]"
+										pcall(callback, currentVal)
+										RS.Heartbeat:Wait()
+									end
+								end)
 							end
+						end)
+						UIS.InputEnded:Connect(function(inputObject)
+							if inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
+								Held = false
+							end
+						end)
 
-							slider_data:Set(slider_options["min"])
+						function slider_data:Set(val)
+							val = math.clamp(tonumber(val) or minv, minv, maxv)
+							local relX = (maxv > minv) and ((val - minv) / (maxv - minv)) or 0
+							indicator.Size = UDim2.new(relX, 0, 1, 0)
+							value.Text = "[ " .. tostring(math.floor(val)) .. " ]"
+							pcall(callback, math.floor(val))
 						end
 
+						slider_data:Set(minv)
 						return slider_data, slider
 					end
 
