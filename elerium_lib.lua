@@ -2138,10 +2138,15 @@ function library:AddWindow(title, options)
 						folder_name = tostring(folder_name or "New Folder")
 						local is_open = (default_open == nil and true or default_open)
 
+						local target_col = (side == "right" or side == 2 or side == "col2") and (self.RightCol or right_col) or (self.LeftCol or left_col)
+						if not target_col then
+							target_col = self.TabFrame or new_tab
+						end
+
 						local new_folder = Instance.new("Frame")
 						new_folder.Name = folder_name .. "Folder"
-						new_folder.Parent = (side == "right" or side == 2 or side == "col2") and right_col or left_col
-						new_folder.Size = UDim2.new(1, 0, 0, 32)
+						new_folder.Parent = target_col
+						new_folder.Size = UDim2.new(1, -6, 0, 32)
 						new_folder.BackgroundColor3 = Color3.fromRGB(26, 27, 33) -- Dark Card Container Box
 						new_folder.BackgroundTransparency = 0
 						new_folder.BorderSizePixel = 0
