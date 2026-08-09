@@ -1,6 +1,6 @@
 -- ============================================================
 -- BERLIN V0.1 | BEE SWARM SIMULATOR
--- DOWNLOADED OFFICIAL ELERIUM V2 UI LIBRARY (CUSTOM CONFIGURED FOR BERLIN V0.1)
+-- OFFICIAL ELERIUM V2 UI LIBRARY (CONFIGURED FOR LEFT SIDEBAR & FULL AUTO-FARM)
 -- ============================================================
 
 local library = (function()
@@ -2053,22 +2053,19 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 
 	return window_data, Window
 end
-
-return library
-
-return library
+    return library
 end)()
 
--- Instantiate Berlin v0.1 Window with Atlas Blue Theme
+-- Create Official Elerium v2 Window
 local window = library:AddWindow("Berlin v0.1", {
     main_color = Color3.fromRGB(38, 75, 135), -- Atlas Blue
-    min_size = Vector2.new(780, 440),         -- Wide Size
+    min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
     can_resize = true,
 })
 
 -- ============================================================
--- TABS & SECTIONS (CLEAN ASCII ENGLISH)
+-- TABS SETUP
 -- ============================================================
 local searchTab   = window:AddTab("Search")
 local homeTab     = window:AddTab("Home")
@@ -2083,34 +2080,156 @@ local debugTab    = window:AddTab("Debug")
 
 farmTab:Show()
 
--- Farming Features
-farmTab:AddLabel("--- Farming Settings ---")
+-- ============================================================
+-- CORE GAME SERVICES & LOGIC FOR BEE SWARM SIMULATOR
+-- ============================================================
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
+local RunService = game:GetService("RunService")
 
-farmTab:AddDropdown("Field", function(selected)
-    print("[Berlin v0.1] Selected Field:", selected)
+local LocalPlayer = Players.LocalPlayer
+
+-- Helper function to get exact center of any part/model
+local function getExactCenter(obj)
+    if obj:IsA("Model") then
+        local cframe, size = obj:GetBoundingBox()
+        return cframe.Position
+    elseif obj:IsA("BasePart") then
+        return obj.Position
+    else
+        return obj:GetPivot().Position
+    end
+end
+
+-- State variables
+local autoFarmActive = false
+local autoTokensActive = false
+local autoDigActive = false
+local autoSprinklerActive = false
+local selectedField = "Pine Tree Forest"
+
+-- 1. AUTO-FARM LOGIC
+task.spawn(function()
+    while task.wait(0.5) do
+        if autoFarmActive then
+            local char = LocalPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local flowerFolder = Workspace:FindFirstChild("FlowerZones") or Workspace:FindFirstChild("Fields")
+            
+            if hrp and flowerFolder then
+                local targetZone = flowerFolder:FindFirstChild(selectedField)
+                if targetZone then
+                    local center = getExactCenter(targetZone)
+                    local offsetX = math.random(-25, 25)
+                    local offsetZ = math.random(-25, 25)
+                    local targetPos = center + Vector3.new(offsetX, 3, offsetZ)
+                    
+                    hrp.Anchored = true
+                    local tween = TweenService:Create(hrp, TweenInfo.new(1.2, Enum.EasingStyle.Linear), {CFrame = CFrame.new(targetPos)})
+                    tween:Play()
+                    tween.Completed:Wait()
+                    hrp.Anchored = false
+                end
+            end
+        end
+    end
+end)
+
+-- 2. AUTO-DIG / TOOL ACTIVATION LOGIC
+task.spawn(function()
+    while task.wait(0.2) do
+        if autoDigActive or autoFarmActive then
+            pcall(function()
+                local char = LocalPlayer.Character
+                local tool = char and char:FindFirstChildOfClass("Tool")
+                if tool then
+                    tool:Activate()
+                else
+                    local bpTool = LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
+                    if bpTool and char then
+                        bpTool.Parent = char
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- 3. AUTO-COLLECT TOKENS LOGIC (IGNORE TRANSPARENT)
+local function isTokenVisible(tok)
+    if tok:IsA("BasePart") and tok.Transparency >= 0.5 then return false end
+    local decal = tok:FindFirstChildOfClass("Decal") or tok:FindFirstChildOfClass("Texture")
+    if decal and decal.Transparency >= 0.5 then return false end
+    return true
+end
+
+task.spawn(function()
+    while task.wait(0.3) do
+        if autoTokensActive then
+            local collectibles = Workspace:FindFirstChild("Collectibles") or Workspace:FindFirstChild("Tokens")
+            if collectibles then
+                local validTokens = {}
+                for _, tok in ipairs(collectibles:GetChildren()) do
+                    if (tok:IsA("BasePart") or tok:IsA("Model")) and isTokenVisible(tok) then
+                        table.insert(validTokens, tok)
+                    end
+                end
+                
+                if #validTokens > 0 then
+                    local char = LocalPlayer.Character
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        local closestTok = validTokens[1]
+                        local targetPos = getExactCenter(closestTok) + Vector3.new(0, 3, 0)
+                        
+                        hrp.Anchored = true
+                        local tween = TweenService:Create(hrp, TweenInfo.new(0.4, Enum.EasingStyle.Linear), {CFrame = CFrame.new(targetPos)})
+                        tween:Play()
+                        tween.Completed:Wait()
+                        hrp.Anchored = false
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ============================================================
+-- POPULATE ELERIUM V2 TABS
+-- ============================================================
+
+-- FARMING TAB
+farmTab:AddLabel("--- Farming Controls ---")
+
+farmTab:AddDropdown("Select Field", function(selected)
+    selectedField = selected
+    print("[Berlin v0.1] Target Field:", selectedField)
 end, {"Pine Tree Forest", "Sunflower Field", "Mushroom Field", "Dandelion Field", "Pineapple Patch", "Mountain Top Field", "Coconut Field", "Pepper Patch"})
 
-farmTab:AddSwitch("Autofarm", function(state)
-    print("[Berlin v0.1] Autofarm:", state)
+farmTab:AddSwitch("Autofarm Field", function(state)
+    autoFarmActive = state
+    print("[Berlin v0.1] Auto-Farm:", state)
 end)
 
-farmTab:AddSwitch("Auto Sprinkler", function(state)
-    print("[Berlin v0.1] Auto Sprinkler:", state)
-end)
-
-farmTab:AddSwitch("Auto Dig", function(state)
+farmTab:AddSwitch("Auto Dig / Swing Tool", function(state)
+    autoDigActive = state
     print("[Berlin v0.1] Auto Dig:", state)
 end)
 
--- Home Features
-homeTab:AddLabel("--- Berlin v0.1 Info ---")
-homeTab:AddLabel("UI Library: Official Elerium v2 (Downloaded & Configured)")
-homeTab:AddLabel("Toggle Key: RightShift")
+farmTab:AddSwitch("Auto Collect Tokens", function(state)
+    autoTokensActive = state
+    print("[Berlin v0.1] Auto Tokens:", state)
+end)
+
+-- HOME TAB
+homeTab:AddLabel("--- Berlin v0.1 Hub ---")
+homeTab:AddLabel("UI Library: Official Elerium v2")
+homeTab:AddLabel("Press RightShift to Toggle UI")
 
 homeTab:AddButton("Fly to My Hive", function()
     print("[Berlin v0.1] Flying to My Hive...")
-    local Workspace = game:GetService("Workspace")
-    local LocalPlayer = game.Players.LocalPlayer
     local hives = Workspace:FindFirstChild("Honeycombs") or Workspace:FindFirstChild("Hives")
     if hives then
         for _, hive in ipairs(hives:GetChildren()) do
@@ -2120,7 +2239,11 @@ homeTab:AddButton("Fly to My Hive", function()
                     local char = LocalPlayer.Character
                     local hrp = char and char:FindFirstChild("HumanoidRootPart")
                     if hrp then
-                        hrp.CFrame = cf + Vector3.new(0, 5, 0)
+                        hrp.Anchored = true
+                        local tween = TweenService:Create(hrp, TweenInfo.new(1.5, Enum.EasingStyle.Linear), {CFrame = cf + Vector3.new(0, 5, 0)})
+                        tween:Play()
+                        tween.Completed:Wait()
+                        hrp.Anchored = false
                     end
                     return
                 end
@@ -2129,21 +2252,21 @@ homeTab:AddButton("Fly to My Hive", function()
     end
 end)
 
--- Config Features
-configTab:AddLabel("--- Movement Controls ---")
+-- CONFIG / PLAYER TAB
+configTab:AddLabel("--- Movement Physics ---")
 
 configTab:AddSlider("WalkSpeed", function(val)
-    local char = game.Players.LocalPlayer.Character
+    local char = LocalPlayer.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     if hum then hum.WalkSpeed = val end
 end, {min = 16, max = 300, readonly = false})
 
 configTab:AddSlider("JumpPower", function(val)
-    local char = game.Players.LocalPlayer.Character
+    local char = LocalPlayer.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     if hum then hum.JumpPower = val end
 end, {min = 50, max = 250, readonly = false})
 
 print("==================================================")
-print("✅ Official Elerium v2 UI Library Downloaded & Configured for Berlin v0.1!")
+print("✅ Berlin v0.1 (Official Elerium v2 Full Auto-Farm) Loaded!")
 print("==================================================")
