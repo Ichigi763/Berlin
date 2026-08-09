@@ -1,6 +1,6 @@
 -- ============================================================
--- BERLIN V0.1.40 | BEE SWARM SIMULATOR
--- MAIN SINGLE FILE LOADER - WITH SCREEN CLICK AUTO DIG & SEPARATE SLIDERS
+-- BERLIN V0.1.41 | BEE SWARM SIMULATOR
+-- MAIN SINGLE FILE LOADER - EXACT ATLAS V1.0 VISUAL MATCH
 -- ============================================================
 
 local library = (function()
@@ -1618,7 +1618,7 @@ function library:AddWindow(title, options)
 						dropdown_name = tostring(dropdown_name or "New Dropdown")
 						callback = typeof(callback) == "function" and callback or function()end
 
-						local baseZ = (windows * 10) + 20
+						local baseZ = (windows * 10) + 25
 
 						local dropdownHolder = Instance.new("Frame")
 						dropdownHolder.Name = dropdown_name .. "DropdownHolder"
@@ -1666,15 +1666,15 @@ function library:AddWindow(title, options)
 						box.Parent = dropdownHolder
 						box.Position = UDim2.new(0, 0, 0, 30)
 						box.Size = UDim2.new(1, 0, 0, 0)
-						box.BackgroundColor3 = Color3.fromRGB(20, 21, 26) -- Solid opaque dark background
+						box.BackgroundColor3 = Color3.fromRGB(24, 25, 30) -- Solid opaque dark background
 						box.BackgroundTransparency = 0
 						box.BorderSizePixel = 0
 						box.ClipsDescendants = true
-						box.ZIndex = baseZ + 3
+						box.ZIndex = baseZ + 10
 						box.Visible = false
 
 						local boxCorner = Instance.new("UICorner")
-						boxCorner.CornerRadius = UDim.new(0, 5)
+						boxCorner.CornerRadius = UDim.new(0, 6)
 						boxCorner.Parent = box
 
 						local objects = Instance.new("ScrollingFrame")
@@ -1684,7 +1684,7 @@ function library:AddWindow(title, options)
 						objects.BackgroundTransparency = 1
 						objects.BorderSizePixel = 0
 						objects.ScrollBarThickness = 3
-						objects.ZIndex = baseZ + 4
+						objects.ZIndex = baseZ + 11
 						objects.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 						local objLayout = Instance.new("UIListLayout")
@@ -1699,8 +1699,6 @@ function library:AddWindow(title, options)
 								p = p.Parent
 							end
 							if p and p:FindFirstChild("Button") then
-								local folderBtn = p:FindFirstChild("Button")
-								-- Trigger folder UIListLayout resize
 								local f_objects = p:FindFirstChild("Objects")
 								if f_objects then
 									local f_layout = f_objects:FindFirstChildOfClass("UIListLayout")
@@ -1722,11 +1720,11 @@ function library:AddWindow(title, options)
 								box.Visible = true
 								dropdownHolder.Size = UDim2.new(1, 0, 0, 26 + len + 6)
 								Resize(box, {Size = UDim2.new(1, 0, 0, len)}, options.tween_time)
-								Resize(indicator, {Rotation = 90}, options.tween_time)
+								Resize(indicator, {Rotation = 0}, options.tween_time) -- Open points UP
 								task.delay(0.05, updateParentFolder)
 							else
 								dropdownHolder.Size = UDim2.new(1, 0, 0, 26)
-								Resize(indicator, {Rotation = 180}, options.tween_time)
+								Resize(indicator, {Rotation = 180}, options.tween_time) -- Closed points DOWN/LEFT
 								local t = Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
 								if t then
 									t.Completed:Connect(function()
@@ -1751,14 +1749,36 @@ function library:AddWindow(title, options)
 							object.BorderSizePixel = 0
 							object.Font = Enum.Font.GothamMedium
 							object.TextSize = 12
-							object.TextColor3 = Color3.fromRGB(220, 220, 220)
-							object.Text = "  " .. n
+							object.TextColor3 = Color3.fromRGB(230, 230, 230)
+							object.Text = "      " .. n
 							object.TextXAlignment = Enum.TextXAlignment.Left
-							object.ZIndex = baseZ + 5
+							object.ZIndex = baseZ + 12
 
 							local oCorner = Instance.new("UICorner")
 							oCorner.CornerRadius = UDim.new(0, 4)
 							oCorner.Parent = object
+
+							-- Field Category Color Dot
+							local colorDot = Instance.new("Frame")
+							colorDot.Name = "CategoryDot"
+							colorDot.Size = UDim2.new(0, 8, 0, 8)
+							colorDot.Position = UDim2.new(0, 6, 0.5, -4)
+							colorDot.BorderSizePixel = 0
+							colorDot.ZIndex = baseZ + 13
+
+							local lowerN = n:lower()
+							if lowerN:find("blue") or lowerN:find("bamboo") or lowerN:find("pine") or lowerN:find("stump") then
+								colorDot.BackgroundColor3 = Color3.fromRGB(40, 160, 255) -- Blue Field
+							elseif lowerN:find("rose") or lowerN:find("mushroom") or lowerN:find("strawberry") or lowerN:find("pepper") then
+								colorDot.BackgroundColor3 = Color3.fromRGB(255, 65, 65) -- Red Field
+							else
+								colorDot.BackgroundColor3 = Color3.fromRGB(70, 210, 100) -- Green Field
+							end
+
+							local dotCorner = Instance.new("UICorner")
+							dotCorner.CornerRadius = UDim.new(1, 0)
+							dotCorner.Parent = colorDot
+							colorDot.Parent = object
 
 							object.MouseEnter:Connect(function()
 								object.BackgroundColor3 = options.main_color
@@ -2467,7 +2487,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.40", {
+local window = library:AddWindow("Berlin v0.1.41", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2476,7 +2496,7 @@ local window = library:AddWindow("Berlin v0.1.40", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.40] Searching for:", query)
+    print("[Berlin v0.1.41] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2582,7 +2602,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.40] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
+    print("[Berlin v0.1.41] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2615,7 +2635,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.40] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.41] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2623,7 +2643,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.40] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.41] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2639,7 +2659,7 @@ local function placeSprinklerInField(fieldName)
             events.PlayerItemEvent:FireServer("Sprinkler")
         end
     end
-    print("[Berlin v0.1.40] Placed Sprinkler in Center of Field:", fieldName)
+    print("[Berlin v0.1.41] Placed Sprinkler in Center of Field:", fieldName)
 end
 
 -- Fire Item Buff RemoteEvent
@@ -2647,7 +2667,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.40] Used Buff:", itemName)
+        print("[Berlin v0.1.41] Used Buff:", itemName)
     end
 end
 
@@ -2656,7 +2676,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.40] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.41] Collected Dispenser:", toyName)
     end
 end
 
@@ -2665,7 +2685,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.40] Took Quest from:", npcName)
+        print("[Berlin v0.1.41] Took Quest from:", npcName)
     end
 end
 
@@ -2681,11 +2701,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.40] Stop Everything:", state)
+    print("[Berlin v0.1.41] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.40] Traveling to Hive Converter...")
+    print("[Berlin v0.1.41] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2726,7 +2746,7 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.40] Selected Field:", selectedField)
+    print("[Berlin v0.1.41] Selected Field:", selectedField)
     if autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2734,7 +2754,7 @@ end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.40] Autofarm:", state)
+    print("[Berlin v0.1.41] Autofarm:", state)
     if state and autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2742,7 +2762,7 @@ end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
     autoSprinklerActive = state
-    print("[Berlin v0.1.40] Auto Sprinkler:", state)
+    print("[Berlin v0.1.41] Auto Sprinkler:", state)
     if state then
         placeSprinklerInField(selectedField)
     end
@@ -2750,7 +2770,7 @@ end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
     autoDigActive = state
-    print("[Berlin v0.1.40] Auto Dig:", state)
+    print("[Berlin v0.1.41] Auto Dig:", state)
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
@@ -2809,18 +2829,18 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSwitch("Stable Speed Lock", function(state)
     speedLockEnabled = state
-    print("[Berlin v0.1.40] Stable Speed Lock:", state)
+    print("[Berlin v0.1.41] Stable Speed Lock:", state)
 end)
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.40] Fly Speed set to:", val)
+    print("[Berlin v0.1.41] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("Walk Speed", function(val)
     walkSpeed = val
     enforceStableSpeed()
-    print("[Berlin v0.1.40] Walk Speed set to:", val)
+    print("[Berlin v0.1.41] Walk Speed set to:", val)
 end, {min = 16, max = 300, readonly = false})
 
 configFolder:AddSlider("JumpPower", function(val)
@@ -3040,7 +3060,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
-                    print("[Berlin v0.1.40] Pollen Full! Traveling smoothly to Hive...")
+                    print("[Berlin v0.1.41] Pollen Full! Traveling smoothly to Hive...")
                     travelToHiveConverter()
                     task.wait(3)
                 end

@@ -1612,7 +1612,7 @@ function library:AddWindow(title, options)
 						dropdown_name = tostring(dropdown_name or "New Dropdown")
 						callback = typeof(callback) == "function" and callback or function()end
 
-						local baseZ = (windows * 10) + 20
+						local baseZ = (windows * 10) + 25
 
 						local dropdownHolder = Instance.new("Frame")
 						dropdownHolder.Name = dropdown_name .. "DropdownHolder"
@@ -1660,15 +1660,15 @@ function library:AddWindow(title, options)
 						box.Parent = dropdownHolder
 						box.Position = UDim2.new(0, 0, 0, 30)
 						box.Size = UDim2.new(1, 0, 0, 0)
-						box.BackgroundColor3 = Color3.fromRGB(20, 21, 26) -- Solid opaque dark background
+						box.BackgroundColor3 = Color3.fromRGB(24, 25, 30) -- Solid opaque dark background
 						box.BackgroundTransparency = 0
 						box.BorderSizePixel = 0
 						box.ClipsDescendants = true
-						box.ZIndex = baseZ + 3
+						box.ZIndex = baseZ + 10
 						box.Visible = false
 
 						local boxCorner = Instance.new("UICorner")
-						boxCorner.CornerRadius = UDim.new(0, 5)
+						boxCorner.CornerRadius = UDim.new(0, 6)
 						boxCorner.Parent = box
 
 						local objects = Instance.new("ScrollingFrame")
@@ -1678,7 +1678,7 @@ function library:AddWindow(title, options)
 						objects.BackgroundTransparency = 1
 						objects.BorderSizePixel = 0
 						objects.ScrollBarThickness = 3
-						objects.ZIndex = baseZ + 4
+						objects.ZIndex = baseZ + 11
 						objects.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 						local objLayout = Instance.new("UIListLayout")
@@ -1693,8 +1693,6 @@ function library:AddWindow(title, options)
 								p = p.Parent
 							end
 							if p and p:FindFirstChild("Button") then
-								local folderBtn = p:FindFirstChild("Button")
-								-- Trigger folder UIListLayout resize
 								local f_objects = p:FindFirstChild("Objects")
 								if f_objects then
 									local f_layout = f_objects:FindFirstChildOfClass("UIListLayout")
@@ -1716,11 +1714,11 @@ function library:AddWindow(title, options)
 								box.Visible = true
 								dropdownHolder.Size = UDim2.new(1, 0, 0, 26 + len + 6)
 								Resize(box, {Size = UDim2.new(1, 0, 0, len)}, options.tween_time)
-								Resize(indicator, {Rotation = 90}, options.tween_time)
+								Resize(indicator, {Rotation = 0}, options.tween_time) -- Open points UP
 								task.delay(0.05, updateParentFolder)
 							else
 								dropdownHolder.Size = UDim2.new(1, 0, 0, 26)
-								Resize(indicator, {Rotation = 180}, options.tween_time)
+								Resize(indicator, {Rotation = 180}, options.tween_time) -- Closed points DOWN/LEFT
 								local t = Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
 								if t then
 									t.Completed:Connect(function()
@@ -1745,14 +1743,36 @@ function library:AddWindow(title, options)
 							object.BorderSizePixel = 0
 							object.Font = Enum.Font.GothamMedium
 							object.TextSize = 12
-							object.TextColor3 = Color3.fromRGB(220, 220, 220)
-							object.Text = "  " .. n
+							object.TextColor3 = Color3.fromRGB(230, 230, 230)
+							object.Text = "      " .. n
 							object.TextXAlignment = Enum.TextXAlignment.Left
-							object.ZIndex = baseZ + 5
+							object.ZIndex = baseZ + 12
 
 							local oCorner = Instance.new("UICorner")
 							oCorner.CornerRadius = UDim.new(0, 4)
 							oCorner.Parent = object
+
+							-- Field Category Color Dot
+							local colorDot = Instance.new("Frame")
+							colorDot.Name = "CategoryDot"
+							colorDot.Size = UDim2.new(0, 8, 0, 8)
+							colorDot.Position = UDim2.new(0, 6, 0.5, -4)
+							colorDot.BorderSizePixel = 0
+							colorDot.ZIndex = baseZ + 13
+
+							local lowerN = n:lower()
+							if lowerN:find("blue") or lowerN:find("bamboo") or lowerN:find("pine") or lowerN:find("stump") then
+								colorDot.BackgroundColor3 = Color3.fromRGB(40, 160, 255) -- Blue Field
+							elseif lowerN:find("rose") or lowerN:find("mushroom") or lowerN:find("strawberry") or lowerN:find("pepper") then
+								colorDot.BackgroundColor3 = Color3.fromRGB(255, 65, 65) -- Red Field
+							else
+								colorDot.BackgroundColor3 = Color3.fromRGB(70, 210, 100) -- Green Field
+							end
+
+							local dotCorner = Instance.new("UICorner")
+							dotCorner.CornerRadius = UDim.new(1, 0)
+							dotCorner.Parent = colorDot
+							colorDot.Parent = object
 
 							object.MouseEnter:Connect(function()
 								object.BackgroundColor3 = options.main_color
