@@ -1175,14 +1175,15 @@ function library:AddWindow(title, options)
 				if icon_id then
 					local icon = Instance.new("ImageLabel")
 					icon.Name = "Icon"
-					icon.Size = UDim2.new(0, 15, 0, 15)
-					icon.Position = UDim2.new(0, 8, 0.5, -7)
+					icon.Size = UDim2.new(0, 16, 0, 16)
+					icon.Position = UDim2.new(0, 8, 0.5, -8)
 					icon.BackgroundTransparency = 1
 					icon.Image = icon_id
-					icon.ImageColor3 = Color3.fromRGB(200, 200, 215)
-					icon.ZIndex = new_button.ZIndex + 1
+					icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+					icon.ZIndex = new_button:GetChildren()[1].ZIndex + 10
 					icon.Parent = new_button
-					new_button.Text = "       " .. tab_name
+					new_button.Text = "         " .. tab_name
+					new_button.TextXAlignment = Enum.TextXAlignment.Left
 				end
 
 				if tab_name == "Search" then
