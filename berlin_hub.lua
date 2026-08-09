@@ -1,93 +1,20 @@
 -- ============================================================
 -- BERLIN V0.1 | BEE SWARM SIMULATOR
--- FULL OFFICIAL ELERIUM V2 UI LIBRARY LOADER (HTTPGET)
+-- MAIN HUB LOADER USING CUSTOM ELERIUM_LIB FROM GITHUB
 -- ============================================================
 
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/memejames/elerium-v2-ui-library/main/Library", true))()
+local eleriumUrl = "https://raw.githubusercontent.com/Ichigi763/Berlin/main/elerium_lib.lua?v=" .. tick()
+local library = loadstring(game:HttpGet(eleriumUrl, false))()
 
--- Create Elerium Window
+-- Create Red & Grey Elerium v2 Window
 local window = library:AddWindow("Berlin v0.1", {
-    main_color = Color3.fromRGB(43, 82, 146), -- Atlas Blue #2b5292
-    min_size = Vector2.new(780, 440),
+    main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red
+    min_size = Vector2.new(780, 345),         -- Auto-fitted height for tabs
     toggle_key = Enum.KeyCode.RightShift,
     can_resize = true,
 })
 
--- ============================================================
--- CONFIGURE ELERIUM LAYOUT (VERTICAL LEFT TABS + FIX MINIMIZE OVERLAP + SEARCH LINE)
--- ============================================================
-task.spawn(function()
-    task.wait(0.2)
-    pcall(function()
-        local gui = game:GetService("CoreGui"):FindFirstChild("imgui") or game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("imgui")
-        if gui then
-            local win = gui:FindFirstChild("Window", true)
-            if win then
-                -- Fix Minimize Button position to FAR RIGHT
-                local bar = win:FindFirstChild("Bar")
-                if bar then
-                    local toggle = bar:FindFirstChild("Toggle")
-                    if toggle then
-                        toggle.Position = UDim2.new(1, -25, 0, -2)
-                    end
-                end
-
-                -- Move TabSelection to LEFT SIDE vertically
-                local tabSel = win:FindFirstChild("TabSelection", true)
-                local tabsCont = win:FindFirstChild("Tabs", true)
-                if tabSel and tabsCont then
-                    tabSel.Position = UDim2.new(0, 8, 0, 35)
-                    tabSel.Size = UDim2.new(0, 130, 1, -45)
-                    tabSel.Visible = true
-
-                    local tabBtns = tabSel:FindFirstChild("TabButtons")
-                    if tabBtns then
-                        local layout = tabBtns:FindFirstChildOfClass("UIListLayout")
-                        if layout then
-                            layout.FillDirection = Enum.FillDirection.Vertical
-                            layout.Padding = UDim.new(0, 4)
-                        end
-                        for _, btn in ipairs(tabBtns:GetChildren()) do
-                            if btn:IsA("TextButton") then
-                                btn.Size = UDim2.new(1, 0, 0, 28)
-                            end
-                        end
-
-                        -- Add Separator Line under Search Button
-                        local searchBtn = tabBtns:FindFirstChild("SearchTabButton")
-                        if searchBtn and not searchBtn:FindFirstChild("SearchLine") then
-                            local line = Instance.new("Frame")
-                            line.Name = "SearchLine"
-                            line.Size = UDim2.new(1, -10, 0, 1)
-                            line.Position = UDim2.new(0, 5, 1, 2)
-                            line.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-                            line.BorderSizePixel = 0
-                            line.Parent = searchBtn
-                        end
-                    end
-
-                    tabsCont.Position = UDim2.new(0, 145, 0, 35)
-                    tabsCont.Size = UDim2.new(1, -155, 1, -45)
-                end
-
-                -- Fix Minimized Overlap Bug (Hide TabSelection when closing window)
-                if bar and bar:FindFirstChild("Toggle") then
-                    local toggleBtn = bar.Toggle
-                    toggleBtn.MouseButton1Click:Connect(function()
-                        task.wait(0.05)
-                        if tabSel then
-                            tabSel.Visible = (win.AbsoluteSize.Y > 50)
-                        end
-                    end)
-                end
-            end
-        end
-    end)
-end)
-
--- ============================================================
--- TABS SETUP
--- ============================================================
+-- Add Vertical Sidebar Tabs via Elerium
 local searchTab   = window:AddTab("Search")
 local homeTab     = window:AddTab("Home")
 local farmTab     = window:AddTab("Farming")
@@ -100,6 +27,31 @@ local configTab   = window:AddTab("Config")
 local debugTab    = window:AddTab("Debug")
 
 homeTab:Show()
+
+-- Add Separator Line under Search Button & Real Search Input
+task.spawn(function()
+    task.wait(0.2)
+    pcall(function()
+        local gui = game:GetService("CoreGui"):FindFirstChild("imgui") or game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("imgui")
+        if gui then
+            local win = gui:FindFirstChild("Window", true)
+            local tabSel = win and win:FindFirstChild("TabSelection", true)
+            local tabBtns = tabSel and tabSel:FindFirstChild("TabButtons")
+            if tabBtns then
+                local searchBtn = tabBtns:FindFirstChild("SearchTabButton")
+                if searchBtn and not searchBtn:FindFirstChild("SearchLine") then
+                    local line = Instance.new("Frame")
+                    line.Name = "SearchLine"
+                    line.Size = UDim2.new(1, -10, 0, 1)
+                    line.Position = UDim2.new(0, 5, 1, 2)
+                    line.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+                    line.BorderSizePixel = 0
+                    line.Parent = searchBtn
+                end
+            end
+        end
+    end)
+end)
 
 -- ============================================================
 -- GAME SERVICES & AUTO-FARM LOGIC
@@ -195,5 +147,5 @@ configTab:AddSlider("JumpPower", function(val)
 end, {min = 50, max = 250, readonly = false})
 
 print("==================================================")
-print("✅ Berlin v0.1 (FULL OFFICIAL ELERIUM V2 LOADER) Ready!")
+print("✅ Berlin v0.1 (Red Theme Elerium Library Loaded from GitHub) Ready!")
 print("==================================================")
