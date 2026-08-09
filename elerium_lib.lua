@@ -1174,16 +1174,16 @@ function library:AddWindow(title, options)
 
 				if icon_id then
 					local LucideMap = {
-						["search"]    = "rbxassetid://6031154871",
+						["search"]    = "rbxassetid://10709782230",
 						["info"]      = "rbxassetid://10723415903",
-						["house"]     = "rbxassetid://6034043960",
-						["swords"]    = "rbxassetid://6035047409",
-						["book"]      = "rbxassetid://6031068426",
-						["tree-pine"] = "rbxassetid://6034503610",
-						["briefcase"] = "rbxassetid://6034503610",
-						["link"]      = "rbxassetid://6031097225",
+						["house"]     = "rbxassetid://10723407092",
+						["swords"]    = "rbxassetid://10723424705",
+						["book"]      = "rbxassetid://10709781460",
+						["tree-pine"] = "rbxassetid://10723434791",
+						["briefcase"] = "rbxassetid://10709781615",
+						["link"]      = "rbxassetid://10709782758",
 						["settings"]  = "rbxassetid://7734053495",
-						["bug"]       = "rbxassetid://6034043960",
+						["bug"]       = "rbxassetid://10709781709",
 					}
 					local real_asset = LucideMap[tostring(icon_id):lower()] or icon_id
 
