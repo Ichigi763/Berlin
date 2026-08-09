@@ -1234,6 +1234,35 @@ function library:AddWindow(title, options)
 				new_tab.Parent = tabs
 				new_tab.ZIndex = new_tab.ZIndex + (windows * 10)
 
+				local left_col = Instance.new("ScrollingFrame")
+				left_col.Name = "LeftColumn"
+				left_col.Size = UDim2.new(0.493, 0, 1, 0)
+				left_col.Position = UDim2.new(0, 0, 0, 0)
+				left_col.BackgroundTransparency = 1
+				left_col.BorderSizePixel = 0
+				left_col.ScrollBarThickness = 2
+				left_col.Parent = new_tab
+
+				local left_layout = Instance.new("UIListLayout")
+				left_layout.Padding = UDim.new(0, 8)
+				left_layout.Parent = left_col
+
+				local right_col = Instance.new("ScrollingFrame")
+				right_col.Name = "RightColumn"
+				right_col.Size = UDim2.new(0.493, 0, 1, 0)
+				right_col.Position = UDim2.new(0.507, 0, 0, 0)
+				right_col.BackgroundTransparency = 1
+				right_col.BorderSizePixel = 0
+				right_col.ScrollBarThickness = 2
+				right_col.Parent = new_tab
+
+				local right_layout = Instance.new("UIListLayout")
+				right_layout.Padding = UDim.new(0, 8)
+				right_layout.Parent = right_col
+
+				tab_data.LeftCol = left_col
+				tab_data.RightCol = right_col
+
 				local function show()
 					if dropdown_open then return end
 					for i, v in pairs(tab_buttons:GetChildren()) do
@@ -2159,12 +2188,12 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 				end
 
 				
-					function tab_data:AddFolder(folder_name, default_open)
+					function tab_data:AddFolder(folder_name, default_open, side)
 						folder_name = tostring(folder_name or "New Folder")
 						local is_open = (default_open == nil and true or default_open)
 
 						local new_folder = prefabs:FindFirstChild("Folder"):Clone()
-						new_folder.Parent = new_tab
+						new_folder.Parent = (side == "right" or side == 2 or side == "col2") and right_col or left_col
 						new_folder.Size = UDim2.new(1, 0, 0, 32)
 						new_folder.ClipsDescendants = true
 

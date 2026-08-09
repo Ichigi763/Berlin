@@ -7,7 +7,7 @@ local eleriumUrl = "https://raw.githubusercontent.com/Ichigi763/Berlin/main/eler
 local library = loadstring(game:HttpGet(eleriumUrl, false))()
 
 -- Create Red & Grey Elerium v2 Window (Exact Width fitted to sidebar + content)
-local window = library:AddWindow("Berlin v0.1.8", {
+local window = library:AddWindow("Berlin v0.1.9", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -16,7 +16,7 @@ local window = library:AddWindow("Berlin v0.1.8", {
 
 -- Add Interactive Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.8] Searching for:", query)
+    print("[Berlin v0.1.9] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -100,9 +100,11 @@ task.spawn(function()
 end)
 
 -- ============================================================
--- FARMING TAB WITH NATIVE ELERIUM COLLAPSIBLE FOLDER CARDS
+-- FARMING TAB WITH 2-COLUMN COLLAPSIBLE SUB-SECTION CARDS
 -- ============================================================
-local farmFolder = farmTab:AddFolder("Farming", true)
+
+-- LEFT COLUMN (COLUMN 1)
+local farmFolder = farmTab:AddFolder("Farming", true, "left")
 local selectedField = "Pine Tree Forest"
 local autoFarmActive = false
 local autoDigActive = false
@@ -115,11 +117,24 @@ farmFolder:AddSwitch("Autofarm", function(state) autoFarmActive = state end)
 farmFolder:AddSwitch("Auto Sprinkler", function(state) end)
 farmFolder:AddSwitch("Auto Dig", function(state) autoDigActive = state end)
 
-farmTab:AddFolder("Farm Settings", false)
-farmTab:AddFolder("Convert Settings", false)
-farmTab:AddFolder("Guiding Star Settings", false)
-farmTab:AddFolder("Natro Patterns", false)
-farmTab:AddFolder("Face Settings", false)
+farmTab:AddFolder("Farm Settings", false, "left")
+farmTab:AddFolder("Convert Settings", false, "left")
+farmTab:AddFolder("Guiding Star Settings", false, "left")
+farmTab:AddFolder("Natro Patterns", false, "left")
+farmTab:AddFolder("Face Settings", false, "left")
+
+-- RIGHT COLUMN (COLUMN 2)
+local sproutFolder = farmTab:AddFolder("Sprout Settings", true, "right")
+sproutFolder:AddSwitch("Farm Sprouts", function(state) end)
+sproutFolder:AddSwitch("Auto Plant Sprouts", function(state) end)
+sproutFolder:AddSwitch("Plant During Day Only", function(state) end)
+sproutFolder:AddSwitch("Plant During Night Only", function(state) end)
+
+farmTab:AddFolder("Allowed Fields", false, "right")
+farmTab:AddFolder("Sprout Rarity", false, "right")
+farmTab:AddFolder("Puffshrooms", false, "right")
+farmTab:AddFolder("Robo Bear Challenge", false, "right")
+farmTab:AddFolder("Follow Player", false, "right")
 
 -- CONFIG TAB
 local configFolder = configTab:AddFolder("Movement Controls", true)
