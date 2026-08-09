@@ -2191,8 +2191,12 @@ local window = library:AddWindow("Berlin v0.1", {
     can_resize = true,
 })
 
+-- Add Interactive Search Field at top of Sidebar
+local searchInput = window:AddSearchBox(function(query)
+    print("[Berlin v0.1] Searching for:", query)
+end)
+
 -- Add Vertical Sidebar Tabs with Lucide Icons via Elerium
-local searchTab   = window:AddTab("Search", "rbxassetid://10709782230")
 local homeTab     = window:AddTab("Home", "rbxassetid://10723407092")
 local farmTab     = window:AddTab("Farming", "rbxassetid://10723346959")
 local combatTab   = window:AddTab("Combat", "rbxassetid://10723424705")

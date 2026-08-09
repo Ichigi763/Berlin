@@ -1095,6 +1095,64 @@ function library:AddWindow(title, options)
 		local tab_selection = Window:FindFirstChild("TabSelection")
 		local tab_buttons = tab_selection:FindFirstChild("TabButtons")
 
+		do -- Add Search Box in Sidebar
+			function window_data:AddSearchBox(callback)
+				tab_selection.Visible = true
+
+				local searchFrame = Instance.new("Frame")
+				searchFrame.Name = "SearchFrame"
+				searchFrame.Size = UDim2.new(1, 0, 0, 28)
+				searchFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+				searchFrame.BorderSizePixel = 0
+				searchFrame.ZIndex = 5
+				searchFrame.Parent = tab_buttons
+
+				local searchCorner = Instance.new("UICorner")
+				searchCorner.CornerRadius = UDim.new(0, 4)
+				searchCorner.Parent = searchFrame
+
+				local searchIcon = Instance.new("ImageLabel")
+				searchIcon.Name = "Icon"
+				searchIcon.Size = UDim2.new(0, 14, 0, 14)
+				searchIcon.Position = UDim2.new(0, 6, 0.5, -7)
+				searchIcon.BackgroundTransparency = 1
+				searchIcon.Image = "rbxassetid://10709782230"
+				searchIcon.ImageColor3 = Color3.fromRGB(180, 180, 200)
+				searchIcon.ZIndex = 6
+				searchIcon.Parent = searchFrame
+
+				local searchBox = Instance.new("TextBox")
+				searchBox.Name = "SearchInput"
+				searchBox.Size = UDim2.new(1, -26, 1, 0)
+				searchBox.Position = UDim2.new(0, 24, 0, 0)
+				searchBox.BackgroundTransparency = 1
+				searchBox.PlaceholderText = "Search..."
+				searchBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 160)
+				searchBox.Text = ""
+				searchBox.TextColor3 = Color3.fromRGB(240, 240, 255)
+				searchBox.TextSize = 12
+				searchBox.Font = Enum.Font.GothamMedium
+				searchBox.TextXAlignment = Enum.TextXAlignment.Left
+				searchBox.ZIndex = 6
+				searchBox.Parent = searchFrame
+
+				local searchLine = Instance.new("Frame")
+				searchLine.Name = "SearchLine"
+				searchLine.Size = UDim2.new(1, -8, 0, 1)
+				searchLine.Position = UDim2.new(0, 4, 1, 3)
+				searchLine.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+				searchLine.BorderSizePixel = 0
+				searchLine.ZIndex = 6
+				searchLine.Parent = searchFrame
+
+				searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+					if callback then callback(searchBox.Text) end
+				end)
+
+				return searchBox
+			end
+		end
+
 		do -- Add Tab
 			function window_data:AddTab(tab_name, icon_id)
 				local tab_data = {}
