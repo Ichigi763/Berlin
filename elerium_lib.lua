@@ -1173,12 +1173,26 @@ function library:AddWindow(title, options)
 				new_button:GetChildren()[1].ZIndex = new_button:GetChildren()[1].ZIndex + (windows * 10)
 
 				if icon_id then
+					local LucideMap = {
+						["search"]    = "rbxassetid://6031154871",
+						["info"]      = "rbxassetid://10723415903",
+						["house"]     = "rbxassetid://7733960981",
+						["swords"]    = "rbxassetid://7733674053",
+						["book"]      = "rbxassetid://7733658504",
+						["tree-pine"] = "rbxassetid://7733799915",
+						["briefcase"] = "rbxassetid://7733665307",
+						["link"]      = "rbxassetid://7733715400",
+						["settings"]  = "rbxassetid://7734053495",
+						["bug"]       = "rbxassetid://7733668835",
+					}
+					local real_asset = LucideMap[tostring(icon_id):lower()] or icon_id
+
 					local icon = Instance.new("ImageLabel")
 					icon.Name = "Icon"
 					icon.Size = UDim2.new(0, 16, 0, 16)
 					icon.Position = UDim2.new(0, 8, 0.5, -8)
 					icon.BackgroundTransparency = 1
-					icon.Image = icon_id
+					icon.Image = real_asset
 					icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 					icon.ZIndex = new_button:GetChildren()[1].ZIndex + 10
 					icon.Parent = new_button
