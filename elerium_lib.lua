@@ -1176,7 +1176,7 @@ function library:AddWindow(title, options)
 					local LucideMap = {
 						["search"]    = "rbxassetid://6031154871",
 						["info"]      = "rbxassetid://10723415903",
-						["house"]     = "rbxassetid://7733960981",
+						["house"]     = "rbxassetid://10723346959",
 						["swords"]    = "rbxassetid://7733674053",
 						["book"]      = "rbxassetid://7733658504",
 						["tree-pine"] = "rbxassetid://7733799915",
