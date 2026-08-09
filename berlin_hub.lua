@@ -14,17 +14,17 @@ local window = library:AddWindow("Berlin v0.1", {
     can_resize = true,
 })
 
--- Add Vertical Sidebar Tabs via Elerium
-local searchTab   = window:AddTab("Search")
-local homeTab     = window:AddTab("Home")
-local farmTab     = window:AddTab("Farming")
-local combatTab   = window:AddTab("Combat")
-local questsTab   = window:AddTab("Quests")
-local plantersTab = window:AddTab("Planters")
-local toysTab     = window:AddTab("Toys")
-local webhookTab  = window:AddTab("Webhook")
-local configTab   = window:AddTab("Config")
-local debugTab    = window:AddTab("Debug")
+-- Add Vertical Sidebar Tabs with Lucide Icons via Elerium
+local searchTab   = window:AddTab("Search", "rbxassetid://10709782230")
+local homeTab     = window:AddTab("Home", "rbxassetid://10723407092")
+local farmTab     = window:AddTab("Farming", "rbxassetid://10723346959")
+local combatTab   = window:AddTab("Combat", "rbxassetid://10723424705")
+local questsTab   = window:AddTab("Quests", "rbxassetid://10709782582")
+local plantersTab = window:AddTab("Planters", "rbxassetid://10709782845")
+local toysTab     = window:AddTab("Toys", "rbxassetid://10723434791")
+local webhookTab  = window:AddTab("Webhook", "rbxassetid://10709782845")
+local configTab   = window:AddTab("Config", "rbxassetid://10709782247")
+local debugTab    = window:AddTab("Debug", "rbxassetid://10709782500")
 
 homeTab:Show()
 

@@ -1096,17 +1096,43 @@ function library:AddWindow(title, options)
 		local tab_buttons = tab_selection:FindFirstChild("TabButtons")
 
 		do -- Add Tab
-			function window_data:AddTab(tab_name)
+			function window_data:AddTab(tab_name, icon_id)
 				local tab_data = {}
 				tab_name = tostring(tab_name or "New Tab")
 				tab_selection.Visible = true
 
 				local new_button = prefabs:FindFirstChild("TabButton"):Clone()
+				new_button.Name = tab_name .. "TabButton"
 				new_button.Parent = tab_buttons
-				new_button.Text = tab_name
+				new_button.Text = "     " .. tab_name
+				new_button.TextXAlignment = Enum.TextXAlignment.Left
 				new_button.Size = UDim2.new(1, 0, 0, 26)
 				new_button.ZIndex = new_button.ZIndex + (windows * 10)
 				new_button:GetChildren()[1].ZIndex = new_button:GetChildren()[1].ZIndex + (windows * 10)
+
+				if icon_id then
+					local icon = Instance.new("ImageLabel")
+					icon.Name = "Icon"
+					icon.Size = UDim2.new(0, 15, 0, 15)
+					icon.Position = UDim2.new(0, 8, 0.5, -7)
+					icon.BackgroundTransparency = 1
+					icon.Image = icon_id
+					icon.ImageColor3 = Color3.fromRGB(200, 200, 215)
+					icon.ZIndex = new_button.ZIndex + 1
+					icon.Parent = new_button
+					new_button.Text = "       " .. tab_name
+				end
+
+				if tab_name == "Search" then
+					local line = Instance.new("Frame")
+					line.Name = "SearchLine"
+					line.Size = UDim2.new(1, -8, 0, 1)
+					line.Position = UDim2.new(0, 4, 1, 3)
+					line.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+					line.BorderSizePixel = 0
+					line.ZIndex = new_button.ZIndex + 2
+					line.Parent = new_button
+				end
 
 				local new_tab = prefabs:FindFirstChild("Tab"):Clone()
 				new_tab.Parent = tabs
@@ -1117,14 +1143,12 @@ function library:AddWindow(title, options)
 					for i, v in pairs(tab_buttons:GetChildren()) do
 						if not (v:IsA("UIListLayout")) then
 							v:GetChildren()[1].ImageColor3 = Color3.fromRGB(52, 53, 56)
-							Resize(v, {Size = UDim2.new(0, v.AbsoluteSize.X, 0, 20)}, options.tween_time)
 						end
 					end
 					for i, v in pairs(tabs:GetChildren()) do
 						v.Visible = false
 					end
 
-					Resize(new_button, {Size = UDim2.new(0, new_button.AbsoluteSize.X, 0, 25)}, options.tween_time)
 					new_button:GetChildren()[1].ImageColor3 = Color3.fromRGB(73, 75, 79)
 					new_tab.Visible = true
 				end
