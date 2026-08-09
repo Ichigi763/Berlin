@@ -1,5 +1,5 @@
 -- ============================================================
--- BERLIN V0.1.34 | BEE SWARM SIMULATOR
+-- BERLIN V0.1.35 | BEE SWARM SIMULATOR
 -- MAIN SINGLE FILE LOADER - EXACT ATLAS V1.0 MATCH
 -- ============================================================
 
@@ -1338,21 +1338,22 @@ function library:AddWindow(title, options)
 						button_text = tostring(button_text or "New Button")
 						callback = typeof(callback) == "function" and callback or function()end
 
-						local button = prefabs:FindFirstChild("Button"):Clone()
-
+						local button = Instance.new("TextButton")
+						button.Name = button_text .. "Button"
 						button.Parent = new_tab
-						button.Text = button_text
+						button.Size = UDim2.new(1, 0, 0, 26)
+						button.BackgroundColor3 = options.main_color or Color3.fromRGB(180, 30, 40)
+						button.BorderSizePixel = 0
 						button.Font = Enum.Font.GothamBold
 						button.TextSize = 13
 						button.TextColor3 = Color3.fromRGB(255, 255, 255)
-						button.Size = UDim2.new(1, 0, 0, 26)
-						button.ZIndex = 15
+						button.Text = button_text
+						button.AutoButtonColor = true
+						button.ZIndex = (windows * 10) + 20
 
-						local bgImg = button:FindFirstChildOfClass("ImageLabel") or (button:GetChildren()[1])
-						if bgImg then
-							bgImg.ZIndex = 14
-							bgImg.ImageColor3 = options.main_color or Color3.fromRGB(180, 30, 40)
-						end
+						local btnCorner = Instance.new("UICorner")
+						btnCorner.CornerRadius = UDim.new(0, 5)
+						btnCorner.Parent = button
 
 						button.MouseButton1Click:Connect(function()
 							ripple(button, mouse.X, mouse.Y)
@@ -1611,77 +1612,112 @@ function library:AddWindow(title, options)
 						dropdown_name = tostring(dropdown_name or "New Dropdown")
 						callback = typeof(callback) == "function" and callback or function()end
 
-						local dropdown = prefabs:FindFirstChild("Dropdown"):Clone()
-						local box = dropdown:FindFirstChild("Box")
-						local objects = box:FindFirstChild("Objects")
-						local indicator = dropdown:FindFirstChild("Indicator")
-						dropdown.ZIndex = dropdown.ZIndex + (windows * 10)
-						box.ZIndex = box.ZIndex + (windows * 10)
-						objects.ZIndex = objects.ZIndex + (windows * 10)
-						indicator.ZIndex = indicator.ZIndex + (windows * 10)
-						dropdown:GetChildren()[3].ZIndex = dropdown:GetChildren()[3].ZIndex + (windows * 10)
+						local baseZ = (windows * 10) + 20
 
+						local dropdown = Instance.new("TextButton")
+						dropdown.Name = dropdown_name .. "Dropdown"
 						dropdown.Parent = new_tab
 						dropdown.Size = UDim2.new(1, 0, 0, 26)
 						dropdown.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
-						dropdown.BackgroundTransparency = 0
 						dropdown.BorderSizePixel = 0
 						dropdown.Font = Enum.Font.GothamBold
 						dropdown.TextSize = 13
 						dropdown.TextColor3 = Color3.fromRGB(240, 240, 240)
 						dropdown.TextXAlignment = Enum.TextXAlignment.Left
-						dropdown.Text = "   " .. dropdown_name
-
-						local d_corner = dropdown:FindFirstChildOfClass("UICorner")
-						if not d_corner then
-							d_corner = Instance.new("UICorner")
-							d_corner.CornerRadius = UDim.new(0, 5)
-							d_corner.Parent = dropdown
+						
+						local initialText = dropdown_name
+						if typeof(options_array) == "table" and #options_array > 0 then
+							initialText = dropdown_name .. ": " .. tostring(options_array[1])
 						end
+						dropdown.Text = "   " .. initialText
+						dropdown.ZIndex = baseZ
 
-						if indicator then
-							indicator.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
-							indicator.ImageColor3 = Color3.fromRGB(240, 240, 240)
-							indicator.Position = UDim2.new(1, -22, 0.5, -7)
-							indicator.Size = UDim2.new(0, 14, 0, 14)
-							indicator.Rotation = 180
-						end
+						local d_corner = Instance.new("UICorner")
+						d_corner.CornerRadius = UDim.new(0, 5)
+						d_corner.Parent = dropdown
 
+						local indicator = Instance.new("ImageLabel")
+						indicator.Name = "Indicator"
+						indicator.Size = UDim2.new(0, 14, 0, 14)
+						indicator.Position = UDim2.new(1, -22, 0.5, -7)
+						indicator.BackgroundTransparency = 1
+						indicator.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
+						indicator.ImageColor3 = Color3.fromRGB(240, 240, 240)
+						indicator.Rotation = 180
+						indicator.ZIndex = baseZ + 1
+						indicator.Parent = dropdown
+
+						local box = Instance.new("Frame")
+						box.Name = "Box"
+						box.Parent = dropdown
+						box.Position = UDim2.new(0, 0, 1, 3)
 						box.Size = UDim2.new(1, 0, 0, 0)
-						box.Position = UDim2.new(0, 0, 1, 2)
+						box.BackgroundColor3 = Color3.fromRGB(26, 27, 33)
+						box.BorderSizePixel = 0
+						box.ClipsDescendants = true
+						box.ZIndex = baseZ + 50
+						box.Visible = false
+
+						local boxCorner = Instance.new("UICorner")
+						boxCorner.CornerRadius = UDim.new(0, 5)
+						boxCorner.Parent = box
+
+						local objects = Instance.new("ScrollingFrame")
+						objects.Name = "Objects"
+						objects.Parent = box
+						objects.Size = UDim2.new(1, 0, 1, 0)
+						objects.BackgroundTransparency = 1
+						objects.BorderSizePixel = 0
+						objects.ScrollBarThickness = 3
+						objects.ZIndex = baseZ + 51
+
+						local objLayout = Instance.new("UIListLayout")
+						objLayout.Padding = UDim.new(0, 2)
+						objLayout.Parent = objects
 
 						local open = false
 						dropdown.MouseButton1Click:Connect(function()
 							open = not open
+							local count = #objects:GetChildren() - 1
+							local len = math.clamp(count * 24, 24, 200)
 
-							local len = (#objects:GetChildren() - 1) * 20
-							if #objects:GetChildren() - 1 >= 10 then
-								len = 10 * 20
-								objects.CanvasSize = UDim2.new(0, 0, (#objects:GetChildren() - 1) * 0.1, 0)
-							end
-
-							if open then -- Open
-								if dropdown_open then return end
-								dropdown_open = true
+							if open then
+								box.Visible = true
 								Resize(box, {Size = UDim2.new(1, 0, 0, len)}, options.tween_time)
-								if indicator then Resize(indicator, {Rotation = 90}, options.tween_time) end
-							else -- Close
-								dropdown_open = false
-								Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
-								if indicator then Resize(indicator, {Rotation = 180}, options.tween_time) end
+								Resize(indicator, {Rotation = 90}, options.tween_time)
+							else
+								Resize(indicator, {Rotation = 180}, options.tween_time)
+								local t = Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
+								if t then
+									t.Completed:Connect(function()
+										if not open then box.Visible = false end
+									end)
+								else
+									box.Visible = false
+								end
 							end
-
 						end)
 
 						function dropdown_data:Add(n)
 							local object_data = {}
 							n = tostring(n or "New Object")
 
-							local object = prefabs:FindFirstChild("DropdownButton"):Clone()
-
+							local object = Instance.new("TextButton")
+							object.Name = n .. "Option"
 							object.Parent = objects
-							object.Text = n
-							object.ZIndex = object.ZIndex + (windows * 10)
+							object.Size = UDim2.new(1, 0, 0, 22)
+							object.BackgroundColor3 = Color3.fromRGB(33, 34, 36)
+							object.BorderSizePixel = 0
+							object.Font = Enum.Font.GothamMedium
+							object.TextSize = 12
+							object.TextColor3 = Color3.fromRGB(220, 220, 220)
+							object.Text = "  " .. n
+							object.TextXAlignment = Enum.TextXAlignment.Left
+							object.ZIndex = baseZ + 52
+
+							local oCorner = Instance.new("UICorner")
+							oCorner.CornerRadius = UDim.new(0, 4)
+							oCorner.Parent = object
 
 							object.MouseEnter:Connect(function()
 								object.BackgroundColor3 = options.main_color
@@ -1690,31 +1726,28 @@ function library:AddWindow(title, options)
 								object.BackgroundColor3 = Color3.fromRGB(33, 34, 36)
 							end)
 
-							if open then
-								local len = (#objects:GetChildren() - 1) * 20
-								if #objects:GetChildren() - 1 >= 10 then
-									len = 10 * 20
-									objects.CanvasSize = UDim2.new(0, 0, (#objects:GetChildren() - 1) * 0.1, 0)
-								end
-								Resize(box, {Size = UDim2.new(1, 0, 0, len)}, options.tween_time)
-							end
-
 							object.MouseButton1Click:Connect(function()
-								if dropdown_open then
-									dropdown.Text = "   " .. dropdown_name .. ": " .. n
-									dropdown_open = false
-									open = false
-									Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
-									if indicator then Resize(indicator, {Rotation = 180}, options.tween_time) end
-									pcall(callback, n)
+								dropdown.Text = "   " .. dropdown_name .. ": " .. n
+								open = false
+								Resize(indicator, {Rotation = 180}, options.tween_time)
+								local t = Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
+								if t then
+									t.Completed:Connect(function()
+										if not open then box.Visible = false end
+									end)
+								else
+									box.Visible = false
 								end
+								pcall(callback, n)
 							end)
 
-							function object_data:Remove()
-								object:Destroy()
-							end
-
 							return object, object_data
+						end
+
+						if typeof(options_array) == "table" then
+							for _, opt in ipairs(options_array) do
+								dropdown_data:Add(tostring(opt))
+							end
 						end
 
 						return dropdown_data, dropdown
@@ -2391,7 +2424,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.34", {
+local window = library:AddWindow("Berlin v0.1.35", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2400,7 +2433,7 @@ local window = library:AddWindow("Berlin v0.1.34", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.34] Searching for:", query)
+    print("[Berlin v0.1.35] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2487,7 +2520,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.34] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    print("[Berlin v0.1.35] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2520,7 +2553,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.34] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.35] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2528,7 +2561,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.34] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.35] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2544,7 +2577,7 @@ local function placeSprinklerInField(fieldName)
             events.PlayerItemEvent:FireServer("Sprinkler")
         end
     end
-    print("[Berlin v0.1.34] Placed Sprinkler in Center of Field:", fieldName)
+    print("[Berlin v0.1.35] Placed Sprinkler in Center of Field:", fieldName)
 end
 
 -- Fire Item Buff RemoteEvent
@@ -2552,7 +2585,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.34] Used Buff:", itemName)
+        print("[Berlin v0.1.35] Used Buff:", itemName)
     end
 end
 
@@ -2561,7 +2594,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.34] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.35] Collected Dispenser:", toyName)
     end
 end
 
@@ -2570,7 +2603,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.34] Took Quest from:", npcName)
+        print("[Berlin v0.1.35] Took Quest from:", npcName)
     end
 end
 
@@ -2586,11 +2619,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.34] Stop Everything:", state)
+    print("[Berlin v0.1.35] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.34] Traveling to Hive Converter...")
+    print("[Berlin v0.1.35] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2631,7 +2664,7 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.34] Selected Field:", selectedField)
+    print("[Berlin v0.1.35] Selected Field:", selectedField)
     if autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2639,7 +2672,7 @@ end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.34] Autofarm:", state)
+    print("[Berlin v0.1.35] Autofarm:", state)
     if state and autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2647,7 +2680,7 @@ end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
     autoSprinklerActive = state
-    print("[Berlin v0.1.34] Auto Sprinkler:", state)
+    print("[Berlin v0.1.35] Auto Sprinkler:", state)
     if state then
         placeSprinklerInField(selectedField)
     end
@@ -2655,7 +2688,7 @@ end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
     autoDigActive = state
-    print("[Berlin v0.1.34] Auto Dig:", state)
+    print("[Berlin v0.1.35] Auto Dig:", state)
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
@@ -2714,7 +2747,7 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.34] Fly Speed set to:", val)
+    print("[Berlin v0.1.35] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("WalkSpeed", function(val)
@@ -2830,7 +2863,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
-                    print("[Berlin v0.1.34] Pollen Full! Traveling smoothly to Hive...")
+                    print("[Berlin v0.1.35] Pollen Full! Traveling smoothly to Hive...")
                     travelToHiveConverter()
                     task.wait(3)
                 end
