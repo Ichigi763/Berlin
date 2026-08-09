@@ -2283,6 +2283,8 @@ function library:AddWindow(title, options)
 						return tab_data:AddFolder(group_name, default_open)
 					end
 
+				end
+
 				return tab_data, new_tab
 			end
 		end
