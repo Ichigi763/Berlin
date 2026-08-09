@@ -1,5 +1,5 @@
 -- ============================================================
--- BERLIN V0.1.10 | BEE SWARM SIMULATOR
+-- BERLIN V0.1.11 | BEE SWARM SIMULATOR
 -- MAIN GITHUB LOADER SCRIPT
 -- ============================================================
 
@@ -7,7 +7,7 @@ local eleriumUrl = "https://raw.githubusercontent.com/Ichigi763/Berlin/main/eler
 local library = loadstring(game:HttpGet(eleriumUrl, false))()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.10", {
+local window = library:AddWindow("Berlin v0.1.11", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -16,7 +16,7 @@ local window = library:AddWindow("Berlin v0.1.10", {
 
 -- Add Interactive Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.10] Searching for:", query)
+    print("[Berlin v0.1.11] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -70,56 +70,78 @@ local FieldPositions = {
 }
 
 -- ============================================================
--- HELPER FUNCTIONS: HIVE FINDER & REMOTE EVENTS
+-- HELPER FUNCTIONS: HIVE FINDER & TELEPORT CONVERTER
 -- ============================================================
 
--- Find Player's Exact Hive & Converter Platform
-local function getMyHivePlatform()
+-- Find Player's Exact Hive Model
+local function getMyHive()
     local hives = Workspace:FindFirstChild("Honeycombs") or Workspace:FindFirstChild("Hives")
-    if not hives then return nil end
-
-    for _, hive in ipairs(hives:GetChildren()) do
-        local ownerVal = hive:FindFirstChild("Owner")
-        if ownerVal and (tostring(ownerVal.Value) == LocalPlayer.Name or ownerVal.Value == LocalPlayer) then
-            local platform = hive:FindFirstChild("Platform") or hive:FindFirstChild("Pad") or hive:FindFirstChild("Base")
-            if platform then
-                return platform.CFrame * CFrame.new(0, 3.5, -4)
-            else
-                return hive:GetPivot() * CFrame.new(0, 3.5, -6)
+    if hives then
+        for _, hive in ipairs(hives:GetChildren()) do
+            local ownerVal = hive:FindFirstChild("Owner")
+            if ownerVal and (ownerVal.Value == LocalPlayer or (ownerVal.Value and tostring(ownerVal.Value) == LocalPlayer.Name)) then
+                return hive
+            end
+            for _, child in ipairs(hive:GetChildren()) do
+                if child.Name == "Owner" and (child.Value == LocalPlayer or (child.Value and tostring(child.Value) == LocalPlayer.Name)) then
+                    return hive
+                end
             end
         end
-        for _, val in ipairs(hive:GetDescendants()) do
-            if (val:IsA("StringValue") or val:IsA("ObjectValue")) and tostring(val.Value) == LocalPlayer.Name then
-                local platform = hive:FindFirstChild("Platform") or hive:FindFirstChild("Pad")
-                if platform then
-                    return platform.CFrame * CFrame.new(0, 3.5, -4)
-                else
-                    return hive:GetPivot() * CFrame.new(0, 3.5, -6)
-                end
+    end
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if (obj.Name == "SpawnPos" or obj.Name == "Platform" or obj.Name == "Pad") and obj.Parent then
+            local owner = obj.Parent:FindFirstChild("Owner") or obj:FindFirstChild("Owner")
+            if owner and (owner.Value == LocalPlayer or (owner.Value and tostring(owner.Value) == LocalPlayer.Name)) then
+                return obj.Parent
             end
         end
     end
     return nil
 end
 
--- Teleport to Player's Hive Converting Pad
+-- Teleport Directly to Player's Hive Converting Pad
 local function teleportToHiveConverter()
-    local targetCF = getMyHivePlatform()
+    print("[Berlin v0.1.11] Teleporting to My Hive Converter...")
+    local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if targetCF and hrp then
-        hrp.Anchored = true
-        local tween = TweenService:Create(hrp, TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {CFrame = targetCF})
-        tween:Play()
-        tween.Completed:Wait()
-        hrp.Anchored = false
 
-        -- Fire Honey Converter RemoteEvent
+    if not hrp then return end
+
+    local targetCF = nil
+    if hive then
+        local platform = hive:FindFirstChild("Platform") or hive:FindFirstChild("Pad") or hive:FindFirstChild("Base") or hive:FindFirstChild("SpawnPos")
+        if platform then
+            targetCF = platform.CFrame * CFrame.new(0, 3.5, 0)
+        else
+            targetCF = hive:GetPivot() * CFrame.new(0, 3.5, -5)
+        end
+    else
+        -- Fallback: Search all SpawnLocations in Workspace
+        for _, spawnPoint in ipairs(Workspace:GetDescendants()) do
+            if spawnPoint:IsA("SpawnLocation") and (spawnPoint.Name:find("Hive") or (spawnPoint.Parent and spawnPoint.Parent.Name:find("Hive"))) then
+                targetCF = spawnPoint.CFrame * CFrame.new(0, 3.5, 0)
+                break
+            end
+        end
+    end
+
+    if targetCF then
+        hrp.Anchored = true
+        hrp.CFrame = targetCF
+        task.wait(0.15)
+        hrp.Anchored = false
+        print("[Berlin v0.1.11] Successfully Teleported to Hive Converter Pad!")
+
+        -- Fire Honey Convert RemoteEvent
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
             events.PlayerHiveCommand:FireServer("MakeHoney")
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
+    else
+        warn("[Berlin v0.1.11] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -128,7 +150,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.10] Used Buff:", itemName)
+        print("[Berlin v0.1.11] Used Buff:", itemName)
     end
 end
 
@@ -137,7 +159,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.10] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.11] Collected Dispenser:", toyName)
     end
 end
 
@@ -146,7 +168,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.10] Took Quest from:", npcName)
+        print("[Berlin v0.1.11] Took Quest from:", npcName)
     end
 end
 
@@ -162,11 +184,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.10] Stop Everything:", state)
+    print("[Berlin v0.1.11] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.10] Flying to Hive Converter...")
+    print("[Berlin v0.1.11] Flying to Hive Converter...")
     teleportToHiveConverter()
 end)
 
@@ -207,12 +229,12 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.10] Selected Field:", selectedField)
+    print("[Berlin v0.1.11] Selected Field:", selectedField)
 end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.10] Autofarm:", state)
+    print("[Berlin v0.1.11] Autofarm:", state)
 end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
@@ -330,11 +352,10 @@ task.spawn(function()
                 end
 
                 -- Auto Convert check if Pollen Container is Full
-                local stats = LocalPlayer:FindFirstChild("CoreStats") or LocalPlayer:FindFirstChild("PlayerGui")
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and pollen.Value >= capacity.Value and capacity.Value > 0 then
-                    print("[Berlin v0.1.10] Pollen Full! Converting at Hive...")
+                    print("[Berlin v0.1.11] Pollen Full! Converting at Hive...")
                     teleportToHiveConverter()
                     task.wait(4)
                 end

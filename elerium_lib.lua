@@ -2211,19 +2211,22 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 						folder_name = tostring(folder_name or "New Folder")
 						local is_open = (default_open == nil and true or default_open)
 
-						local new_folder = prefabs:FindFirstChild("Folder"):Clone()
+						local new_folder = Instance.new("Frame")
+						new_folder.Name = folder_name .. "Folder"
 						new_folder.Parent = (side == "right" or side == 2 or side == "col2") and right_col or left_col
 						new_folder.Size = UDim2.new(1, 0, 0, 32)
+						new_folder.BackgroundTransparency = 1
 						new_folder.ClipsDescendants = true
 
-						local f_button = new_folder:FindFirstChild("Button")
-						if not f_button then
-							f_button = Instance.new("TextButton")
-							f_button.Name = "Button"
-							f_button.Parent = new_folder
-						end
-						f_button.Text = "  " .. folder_name
-						f_button.Size = UDim2.new(1, 0, 0, 32)
+						local f_button = Instance.new("TextButton")
+						f_button.Name = "Button"
+						f_button.Parent = new_folder
+						f_button.Size = UDim2.new(1, 0, 0, 30)
+						f_button.Position = UDim2.new(0, 0, 0, 0)
+						f_button.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
+						f_button.BackgroundTransparency = 0
+						f_button.BorderSizePixel = 0
+						f_button.Text = "   " .. folder_name
 						f_button.Font = Enum.Font.GothamBold
 						f_button.TextSize = 13
 						f_button.TextColor3 = Color3.fromRGB(240, 240, 240)
@@ -2231,29 +2234,28 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 						f_button.AutoButtonColor = true
 						f_button.ZIndex = 5
 
-						local arrow = f_button:FindFirstChild("ArrowLabel")
-						if not arrow then
-							arrow = Instance.new("TextLabel")
-							arrow.Name = "ArrowLabel"
-							arrow.Size = UDim2.new(0, 30, 1, 0)
-							arrow.Position = UDim2.new(1, -30, 0, 0)
-							arrow.BackgroundTransparency = 1
-							arrow.Font = Enum.Font.GothamBold
-							arrow.TextSize = 14
-							arrow.TextColor3 = Color3.fromRGB(220, 220, 220)
-							arrow.ZIndex = 6
-							arrow.Parent = f_button
-						end
+						local f_corner = Instance.new("UICorner")
+						f_corner.CornerRadius = UDim.new(0, 5)
+						f_corner.Parent = f_button
+
+						local arrow = Instance.new("TextLabel")
+						arrow.Name = "ArrowLabel"
+						arrow.Size = UDim2.new(0, 30, 1, 0)
+						arrow.Position = UDim2.new(1, -30, 0, 0)
+						arrow.BackgroundTransparency = 1
+						arrow.Font = Enum.Font.GothamBold
+						arrow.TextSize = 14
+						arrow.TextColor3 = Color3.fromRGB(220, 220, 220)
+						arrow.ZIndex = 6
+						arrow.Parent = f_button
 						arrow.Text = is_open and "▼" or "◀"
 
-						local f_objects = new_folder:FindFirstChild("Objects")
-						if not f_objects then
-							f_objects = Instance.new("Frame")
-							f_objects.Name = "Objects"
-							f_objects.Parent = new_folder
-						end
-						f_objects.Position = UDim2.new(0, 8, 0, 34)
-						f_objects.Size = UDim2.new(1, -16, 0, 0)
+						local f_objects = Instance.new("Frame")
+						f_objects.Name = "Objects"
+						f_objects.Parent = new_folder
+						f_objects.BackgroundTransparency = 1
+						f_objects.Position = UDim2.new(0, 4, 0, 34)
+						f_objects.Size = UDim2.new(1, -8, 0, 0)
 						f_objects.Visible = is_open
 
 						local f_layout = f_objects:FindFirstChildOfClass("UIListLayout")
