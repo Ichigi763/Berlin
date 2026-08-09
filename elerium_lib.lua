@@ -1336,18 +1336,17 @@ function library:AddWindow(title, options)
 
 						button.Parent = new_tab
 						button.Text = button_text
-						button.Size = UDim2.new(0, gNameLen(button), 0, 20)
-						button.ZIndex = button.ZIndex + (windows * 10)
-						button:GetChildren()[1].ZIndex = button:GetChildren()[1].ZIndex + (windows * 10)
+						button.Font = Enum.Font.GothamBold
+						button.TextSize = 13
+						button.TextColor3 = Color3.fromRGB(255, 255, 255)
+						button.Size = UDim2.new(1, 0, 0, 26)
+						button.ZIndex = 15
 
-						spawn(function()
-							while true do
-								if button and button:GetChildren()[1] then
-									button:GetChildren()[1].ImageColor3 = options.main_color
-								end
-								RS.Heartbeat:Wait()
-							end
-						end)
+						local bgImg = button:FindFirstChildOfClass("ImageLabel") or (button:GetChildren()[1])
+						if bgImg then
+							bgImg.ZIndex = 14
+							bgImg.ImageColor3 = options.main_color or Color3.fromRGB(180, 30, 40)
+						end
 
 						button.MouseButton1Click:Connect(function()
 							ripple(button, mouse.X, mouse.Y)
@@ -2211,7 +2210,7 @@ function library:AddWindow(title, options)
 						arrow.ImageColor3 = Color3.fromRGB(240, 240, 240)
 						arrow.ZIndex = baseZ + 2
 						arrow.Parent = f_button
-						arrow.Rotation = is_open and 90 or 0
+						arrow.Rotation = is_open and 90 or 180
 
 						local f_objects = Instance.new("Frame")
 						f_objects.Name = "Objects"
@@ -2262,7 +2261,7 @@ function library:AddWindow(title, options)
 								new_folder.BackgroundTransparency = 0
 								new_folder.ClipsDescendants = true
 								if animate then
-									Resize(arrow, {Rotation = 0}, 0.2)
+									Resize(arrow, {Rotation = 180}, 0.2)
 									local t = Resize(new_folder, {Size = UDim2.new(1, -6, 0, 32)}, 0.2)
 									if t then
 										t.Completed:Connect(function()
@@ -2270,7 +2269,7 @@ function library:AddWindow(title, options)
 										end)
 									end
 								else
-									arrow.Rotation = 0
+									arrow.Rotation = 180
 									new_folder.Size = UDim2.new(1, -6, 0, 32)
 									f_objects.Visible = false
 								end
