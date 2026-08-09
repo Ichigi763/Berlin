@@ -952,6 +952,7 @@ function library:AddWindow(title, options)
 
 	local Window = prefabs:FindFirstChild("Window"):Clone()
 	Window.Parent = windowsFrame
+	Window.ClipsDescendants = true
 	Window:FindFirstChild("Title").Text = title
 	Window.Size = UDim2.new(0, options.min_size.X, 0, options.min_size.Y)
 	Window.ZIndex = Window.ZIndex + (windows * 10)
@@ -1068,11 +1069,15 @@ function library:AddWindow(title, options)
 					end
 
 					Resizer.Active = false
-					oldy = (Window.AbsoluteSize.Y > 50 and Window.AbsoluteSize.Y or 440)
+					if Window.AbsoluteSize.Y > 50 then
+						oldy = Window.AbsoluteSize.Y
+					end
 					open_close.Text = "◄"
-					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 34)}, options.tween_time)
+					Window.ClipsDescendants = true
+					Window.Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 34)
 				else
 					-- Open / Expand
+					Window.Size = UDim2.new(0, Window.AbsoluteSize.X, 0, oldy)
 					for tabObj, wasVisible in pairs(oldwindowdata) do
 						if tabObj and tabObj.Parent then
 							tabObj.Visible = wasVisible
@@ -1081,11 +1086,10 @@ function library:AddWindow(title, options)
 
 					Resizer.Active = true
 					open_close.Text = "▼"
-					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, oldy)}, options.tween_time)
 				end
 
 				open = not open
-				wait(options.tween_time)
+				task.wait(0.1)
 				canopen = true
 			end
 		end)
