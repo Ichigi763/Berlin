@@ -1615,8 +1615,33 @@ function library:AddWindow(title, options)
 						dropdown:GetChildren()[3].ZIndex = dropdown:GetChildren()[3].ZIndex + (windows * 10)
 
 						dropdown.Parent = new_tab
-						dropdown.Text = "      " .. dropdown_name
+						dropdown.Size = UDim2.new(1, 0, 0, 26)
+						dropdown.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
+						dropdown.BackgroundTransparency = 0
+						dropdown.BorderSizePixel = 0
+						dropdown.Font = Enum.Font.GothamBold
+						dropdown.TextSize = 13
+						dropdown.TextColor3 = Color3.fromRGB(240, 240, 240)
+						dropdown.TextXAlignment = Enum.TextXAlignment.Left
+						dropdown.Text = "   " .. dropdown_name
+
+						local d_corner = dropdown:FindFirstChildOfClass("UICorner")
+						if not d_corner then
+							d_corner = Instance.new("UICorner")
+							d_corner.CornerRadius = UDim.new(0, 5)
+							d_corner.Parent = dropdown
+						end
+
+						if indicator then
+							indicator.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
+							indicator.ImageColor3 = Color3.fromRGB(240, 240, 240)
+							indicator.Position = UDim2.new(1, -22, 0.5, -7)
+							indicator.Size = UDim2.new(0, 14, 0, 14)
+							indicator.Rotation = 180
+						end
+
 						box.Size = UDim2.new(1, 0, 0, 0)
+						box.Position = UDim2.new(0, 0, 1, 2)
 
 						local open = false
 						dropdown.MouseButton1Click:Connect(function()
@@ -1632,11 +1657,11 @@ function library:AddWindow(title, options)
 								if dropdown_open then return end
 								dropdown_open = true
 								Resize(box, {Size = UDim2.new(1, 0, 0, len)}, options.tween_time)
-								Resize(indicator, {Rotation = 90}, options.tween_time)
+								if indicator then Resize(indicator, {Rotation = 90}, options.tween_time) end
 							else -- Close
 								dropdown_open = false
 								Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
-								Resize(indicator, {Rotation = -90}, options.tween_time)
+								if indicator then Resize(indicator, {Rotation = 180}, options.tween_time) end
 							end
 
 						end)
@@ -1669,11 +1694,11 @@ function library:AddWindow(title, options)
 
 							object.MouseButton1Click:Connect(function()
 								if dropdown_open then
-									dropdown.Text = "      [ " .. n .. " ]"
+									dropdown.Text = "   " .. dropdown_name .. ": " .. n
 									dropdown_open = false
 									open = false
 									Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
-									Resize(indicator, {Rotation = -90}, options.tween_time)
+									if indicator then Resize(indicator, {Rotation = 180}, options.tween_time) end
 									pcall(callback, n)
 								end
 							end)
