@@ -1,5 +1,5 @@
 -- ============================================================
--- BERLIN V0.1.15 | BEE SWARM SIMULATOR
+-- BERLIN V0.1.16 | BEE SWARM SIMULATOR
 -- MAIN GITHUB LOADER SCRIPT
 -- ============================================================
 
@@ -2374,7 +2374,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.15", {
+local window = library:AddWindow("Berlin v0.1.16", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2383,7 +2383,7 @@ local window = library:AddWindow("Berlin v0.1.15", {
 
 -- Add Interactive Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.15] Searching for:", query)
+    print("[Berlin v0.1.16] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2470,7 +2470,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.15] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    print("[Berlin v0.1.16] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2504,7 +2504,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.15] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.16] Arrived at Hive Converter Pad!")
 
         -- Fire Honey Convert RemoteEvent
         local events = ReplicatedStorage:FindFirstChild("Events")
@@ -2513,7 +2513,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.15] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.16] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2522,7 +2522,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.15] Used Buff:", itemName)
+        print("[Berlin v0.1.16] Used Buff:", itemName)
     end
 end
 
@@ -2531,7 +2531,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.15] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.16] Collected Dispenser:", toyName)
     end
 end
 
@@ -2540,7 +2540,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.15] Took Quest from:", npcName)
+        print("[Berlin v0.1.16] Took Quest from:", npcName)
     end
 end
 
@@ -2556,11 +2556,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.15] Stop Everything:", state)
+    print("[Berlin v0.1.16] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.15] Traveling to Hive Converter...")
+    print("[Berlin v0.1.16] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2601,12 +2601,12 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.15] Selected Field:", selectedField)
+    print("[Berlin v0.1.16] Selected Field:", selectedField)
 end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.15] Autofarm:", state)
+    print("[Berlin v0.1.16] Autofarm:", state)
 end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
@@ -2672,7 +2672,7 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.15] Fly Speed set to:", val)
+    print("[Berlin v0.1.16] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("WalkSpeed", function(val)
@@ -2688,52 +2688,69 @@ configFolder:AddSlider("JumpPower", function(val)
 end, {min = 50, max = 300, readonly = false})
 
 -- ============================================================
--- AUTOFARM ENGINE LOOP (DIG + FIELD MOVEMENT + TOKEN COLLECT + AUTO CONVERT)
+-- AUTOFARM ENGINE LOOP (HUMANOID WALKING + TOKEN COLLECT + AUTO CONVERT)
 -- ============================================================
 task.spawn(function()
     local angle = 0
-    while task.wait(0.15) do
+    while task.wait(0.2) do
         if not stopEverything and autoFarmActive then
             local char = LocalPlayer.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
             local tool = char and char:FindFirstChildOfClass("Tool")
 
-            -- Auto Dig Scoop Tool
+            -- Auto Dig / Scoop Tool
             if autoDigActive or autoFarmActive then
                 if tool then tool:Activate() end
             end
 
-            -- Bounded Field Patrol & Token Collection
-            if hrp then
+            if hrp and hum then
                 local center = FieldPositions[selectedField] or Vector3.new(0, 4, 0)
+                local distFromField = (hrp.Position - center).Magnitude
 
-                -- Check for Tokens in workspace
+                -- If player is far off field (>120 studs), smoothly travel to field first
+                if distFromField > 120 then
+                    local travelTime = math.clamp(distFromField / math.max(flySpeed, 10), 0.5, 6)
+                    hrp.Anchored = true
+                    local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = CFrame.new(center + Vector3.new(0, 4, 0))})
+                    tween:Play()
+                    tween.Completed:Wait()
+                    hrp.Anchored = false
+                end
+
+                -- Scan for Tokens inside the field
                 local collectibles = Workspace:FindFirstChild("Collectibles") or Workspace:FindFirstChild("Tokens")
                 local targetToken = nil
                 if collectibles then
+                    local minDistance = 9999
                     for _, token in ipairs(collectibles:GetChildren()) do
-                        if token:IsA("BasePart") and (token.Position - center).Magnitude < 38 then
-                            targetToken = token
-                            break
+                        if token:IsA("BasePart") and (token.Position - center).Magnitude < 45 then
+                            local d = (hrp.Position - token.Position).Magnitude
+                            if d < minDistance then
+                                minDistance = d
+                                targetToken = token
+                            end
                         end
                     end
                 end
 
                 if targetToken then
-                    hrp.CFrame = CFrame.new(targetToken.Position + Vector3.new(0, 2.5, 0))
+                    -- WALK / RUN smoothly to token using Humanoid:MoveTo!
+                    hum:MoveTo(targetToken.Position)
                 else
-                    -- Move in field circle radius
-                    angle = angle + 0.35
-                    local offsetX = math.cos(angle) * 18
-                    local offsetZ = math.sin(angle) * 18
-                    hrp.CFrame = CFrame.new(center + Vector3.new(offsetX, 3, offsetZ))
+                    -- Walk around inside field radius naturally
+                    angle = angle + 0.5
+                    local offsetX = math.cos(angle) * 20
+                    local offsetZ = math.sin(angle) * 20
+                    local patrolPoint = center + Vector3.new(offsetX, 0, offsetZ)
+                    hum:MoveTo(patrolPoint)
                 end
 
                 -- Auto Convert check if Pollen Container is Full
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and pollen.Value >= capacity.Value and capacity.Value > 0 then
-                    print("[Berlin v0.1.15] Pollen Full! Traveling to Hive...")
+                    print("[Berlin v0.1.16] Pollen Full! Traveling to Hive...")
                     travelToHiveConverter()
                     task.wait(4)
                 end
