@@ -1045,49 +1045,35 @@ function library:AddWindow(title, options)
 		local open = true
 		local canopen = true
 
-		local oldwindowdata = {}
-		local oldy = Window.AbsoluteSize.Y
+		local oldy = 440
 		open_close.MouseButton1Click:Connect(function()
 			if canopen then
 				canopen = false
 
 				if open then
-					-- Close
-
-					oldwindowdata = {}
+					-- Close / Minimize
 					if Window:FindFirstChild("TabSelection") then Window.TabSelection.Visible = false end
-					for i,v in pairs(Window:FindFirstChild("Tabs"):GetChildren()) do
-						oldwindowdata[v] = v.Visible
-						v.Visible = false
-					end
+					if Window:FindFirstChild("Tabs") then Window.Tabs.Visible = false end
 
 					Resizer.Active = false
-
-					oldy = Window.AbsoluteSize.Y
+					oldy = (Window.AbsoluteSize.Y > 50 and Window.AbsoluteSize.Y or 440)
 					open_close.Text = "◄"
-					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 26)}, options.tween_time)
-					open_close.Parent:FindFirstChild("Base").Transparency = 1
-
+					bar.Size = UDim2.new(1, 0, 1, 0)
+					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 34)}, options.tween_time)
 				else
-					-- Open
-
+					-- Open / Expand
 					if Window:FindFirstChild("TabSelection") then Window.TabSelection.Visible = true end
-					for i,v in pairs(oldwindowdata) do
-						i.Visible = v
-					end
+					if Window:FindFirstChild("Tabs") then Window.Tabs.Visible = true end
 
 					Resizer.Active = true
-
 					open_close.Text = "▼"
+					bar.Size = UDim2.new(1, 0, 0, 34)
 					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, oldy)}, options.tween_time)
-					open_close.Parent:FindFirstChild("Base").Transparency = 0
-
 				end
 
 				open = not open
 				wait(options.tween_time)
 				canopen = true
-
 			end
 		end)
 	end
