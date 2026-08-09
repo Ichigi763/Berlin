@@ -2130,12 +2130,6 @@ function library:AddWindow(title, options)
 						return ha_data, ha
 					end
 
-						-- Old AddFolder removed to prevent duplicate definition conflict
-					end
-
-				end
-
-				
 					function tab_data:AddFolder(folder_name, default_open, side)
 						folder_name = tostring(folder_name or "New Folder")
 						local is_open = (default_open == nil and true or default_open)
