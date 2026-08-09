@@ -1,5 +1,5 @@
 -- ============================================================
--- BERLIN V0.1.14 | BEE SWARM SIMULATOR
+-- BERLIN V0.1.15 | BEE SWARM SIMULATOR
 -- MAIN GITHUB LOADER SCRIPT
 -- ============================================================
 
@@ -2276,7 +2276,6 @@ function library:AddWindow(title, options)
 							if is_open then
 								local h = f_layout.AbsoluteContentSize.Y
 								if h == 0 then
-									-- Fallback height based on number of children
 									local count = 0
 									for _, child in ipairs(f_objects:GetChildren()) do
 										if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
@@ -2375,7 +2374,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.14", {
+local window = library:AddWindow("Berlin v0.1.15", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2384,7 +2383,7 @@ local window = library:AddWindow("Berlin v0.1.14", {
 
 -- Add Interactive Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.14] Searching for:", query)
+    print("[Berlin v0.1.15] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2411,6 +2410,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local startTime = os.time()
 local stopEverything = false
+local flySpeed = 75 -- Default Fly Speed
 
 -- Complete List of 22 Bee Swarm Simulator Fields
 local FieldPositions = {
@@ -2470,7 +2470,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.14] Traveling Smoothly to My Hive Converter Pad...")
+    print("[Berlin v0.1.15] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2497,14 +2497,14 @@ local function travelToHiveConverter()
 
     if targetCF then
         local distance = (hrp.Position - targetCF.Position).Magnitude
-        local travelTime = math.clamp(distance / 50, 0.5, 3.5) -- Smooth float travel speed
+        local travelTime = math.clamp(distance / math.max(flySpeed, 10), 0.2, 10)
 
         hrp.Anchored = true
-        local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {CFrame = targetCF})
+        local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = targetCF})
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.14] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.15] Arrived at Hive Converter Pad!")
 
         -- Fire Honey Convert RemoteEvent
         local events = ReplicatedStorage:FindFirstChild("Events")
@@ -2513,7 +2513,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.14] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.15] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2522,7 +2522,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.14] Used Buff:", itemName)
+        print("[Berlin v0.1.15] Used Buff:", itemName)
     end
 end
 
@@ -2531,7 +2531,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.14] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.15] Collected Dispenser:", toyName)
     end
 end
 
@@ -2540,7 +2540,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.14] Took Quest from:", npcName)
+        print("[Berlin v0.1.15] Took Quest from:", npcName)
     end
 end
 
@@ -2556,11 +2556,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.14] Stop Everything:", state)
+    print("[Berlin v0.1.15] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.14] Traveling to Hive Converter...")
+    print("[Berlin v0.1.15] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2601,12 +2601,12 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.14] Selected Field:", selectedField)
+    print("[Berlin v0.1.15] Selected Field:", selectedField)
 end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.14] Autofarm:", state)
+    print("[Berlin v0.1.15] Autofarm:", state)
 end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
@@ -2669,6 +2669,12 @@ end)
 
 -- CONFIG TAB
 local configFolder = configTab:AddFolder("Movement Controls", true, "left")
+
+configFolder:AddSlider("Fly Speed", function(val)
+    flySpeed = val
+    print("[Berlin v0.1.15] Fly Speed set to:", val)
+end, {min = 10, max = 300, readonly = false})
+
 configFolder:AddSlider("WalkSpeed", function(val)
     local char = LocalPlayer.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
@@ -2727,7 +2733,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and pollen.Value >= capacity.Value and capacity.Value > 0 then
-                    print("[Berlin v0.1.14] Pollen Full! Traveling to Hive...")
+                    print("[Berlin v0.1.15] Pollen Full! Traveling to Hive...")
                     travelToHiveConverter()
                     task.wait(4)
                 end
