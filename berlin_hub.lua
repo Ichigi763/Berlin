@@ -1,6 +1,6 @@
 -- ============================================================
--- BERLIN V0.1.37 | BEE SWARM SIMULATOR
--- MAIN SINGLE FILE LOADER - WITH INLINE EXPANDING DROPDOWNS
+-- BERLIN V0.1.38 | BEE SWARM SIMULATOR
+-- MAIN SINGLE FILE LOADER - WITH STABLE SPEED LOCK & LOOK-AHEAD TOKEN CHAINING
 -- ============================================================
 
 local library = (function()
@@ -2461,7 +2461,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.37", {
+local window = library:AddWindow("Berlin v0.1.38", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2470,7 +2470,7 @@ local window = library:AddWindow("Berlin v0.1.37", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.37] Searching for:", query)
+    print("[Berlin v0.1.38] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2493,11 +2493,13 @@ local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 local startTime = os.time()
 local stopEverything = false
-local flySpeed = 75 -- Default Fly Speed
+local flySpeed = 75 -- Default Fly & Walk Speed
+local speedLockEnabled = true -- 100% Stable WalkSpeed Lock
 
 -- Complete List of 22 Bee Swarm Simulator Fields
 local FieldPositions = {
@@ -2523,6 +2525,21 @@ local FieldPositions = {
     ["Ant Field"]           = Vector3.new(120, 30, 500),
     ["Robo Field"]          = Vector3.new(310, 150, 200),
 }
+
+-- ============================================================
+-- STABLE SPEED LOCK ENGINE (PREVENTS BSS BUFFS FROM RESETTING SPEED)
+-- ============================================================
+local function enforceStableSpeed()
+    if not speedLockEnabled then return end
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum and hum.WalkSpeed ~= flySpeed then
+        hum.WalkSpeed = flySpeed
+    end
+end
+
+RunService.Heartbeat:Connect(enforceStableSpeed)
+RunService.Stepped:Connect(enforceStableSpeed)
 
 -- ============================================================
 -- HELPER FUNCTIONS: HIVE FINDER & SMOOTH TRAVEL TO CONVERTER
@@ -2557,7 +2574,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.37] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    print("[Berlin v0.1.38] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2590,7 +2607,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.37] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.38] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2598,7 +2615,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.37] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.38] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2614,7 +2631,7 @@ local function placeSprinklerInField(fieldName)
             events.PlayerItemEvent:FireServer("Sprinkler")
         end
     end
-    print("[Berlin v0.1.37] Placed Sprinkler in Center of Field:", fieldName)
+    print("[Berlin v0.1.38] Placed Sprinkler in Center of Field:", fieldName)
 end
 
 -- Fire Item Buff RemoteEvent
@@ -2622,7 +2639,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.37] Used Buff:", itemName)
+        print("[Berlin v0.1.38] Used Buff:", itemName)
     end
 end
 
@@ -2631,7 +2648,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.37] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.38] Collected Dispenser:", toyName)
     end
 end
 
@@ -2640,7 +2657,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.37] Took Quest from:", npcName)
+        print("[Berlin v0.1.38] Took Quest from:", npcName)
     end
 end
 
@@ -2656,11 +2673,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.37] Stop Everything:", state)
+    print("[Berlin v0.1.38] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.37] Traveling to Hive Converter...")
+    print("[Berlin v0.1.38] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2701,7 +2718,7 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.37] Selected Field:", selectedField)
+    print("[Berlin v0.1.38] Selected Field:", selectedField)
     if autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2709,7 +2726,7 @@ end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.37] Autofarm:", state)
+    print("[Berlin v0.1.38] Autofarm:", state)
     if state and autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2717,7 +2734,7 @@ end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
     autoSprinklerActive = state
-    print("[Berlin v0.1.37] Auto Sprinkler:", state)
+    print("[Berlin v0.1.38] Auto Sprinkler:", state)
     if state then
         placeSprinklerInField(selectedField)
     end
@@ -2725,7 +2742,7 @@ end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
     autoDigActive = state
-    print("[Berlin v0.1.37] Auto Dig:", state)
+    print("[Berlin v0.1.38] Auto Dig:", state)
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
@@ -2782,16 +2799,16 @@ end)
 -- CONFIG TAB
 local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
-configFolder:AddSlider("Fly Speed", function(val)
-    flySpeed = val
-    print("[Berlin v0.1.37] Fly Speed set to:", val)
-end, {min = 10, max = 300, readonly = false})
+configFolder:AddSwitch("Stable Speed Lock", function(state)
+    speedLockEnabled = state
+    print("[Berlin v0.1.38] Stable Speed Lock:", state)
+end)
 
-configFolder:AddSlider("WalkSpeed", function(val)
-    local char = LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then hum.WalkSpeed = val end
-end, {min = 16, max = 300, readonly = false})
+configFolder:AddSlider("Fly & Walk Speed", function(val)
+    flySpeed = val
+    enforceStableSpeed()
+    print("[Berlin v0.1.38] Locked Speed set to:", val)
+end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("JumpPower", function(val)
     local char = LocalPlayer.Character
@@ -2839,10 +2856,8 @@ local function runUIDiagnostics()
         if desc:IsA("TextButton") then
             if desc.Name:find("Button") then
                 btnCount = btnCount + 1
-                print(string.format("[Berlin Debug] 🔘 Button [%s] Text: '%s' | Color: %s", desc.Name, desc.Text, tostring(desc.TextColor3)))
             elseif desc.Name:find("Dropdown") then
                 dropdownCount = dropdownCount + 1
-                print(string.format("[Berlin Debug] 🔽 Dropdown [%s] Text: '%s' | ZIndex: %d", desc.Name, desc.Text, desc.ZIndex))
             end
         elseif desc:IsA("Frame") and desc.Name:find("Folder") then
             folderCount = folderCount + 1
@@ -2859,13 +2874,8 @@ debugFolder:AddButton("Run UI Diagnostic Test", function()
     runUIDiagnostics()
 end)
 
--- Run Diagnostic on Startup after 2 Seconds
-task.delay(2, function()
-    runUIDiagnostics()
-end)
-
 -- ============================================================
--- SMART SPEED & DESPAWN REACHABILITY TOKEN FARMING ENGINE
+-- LOOK-AHEAD TOKEN CHAIN PATHING ENGINE
 -- ============================================================
 local function isTokenReachable(token, hrpPos, playerSpeed)
     if not token or not token.Parent or not token:IsA("BasePart") then
@@ -2873,20 +2883,60 @@ local function isTokenReachable(token, hrpPos, playerSpeed)
     end
     local dist = (hrpPos - token.Position).Magnitude
     
-    -- Check if token has spawn metadata or remaining lifespan
     local spawnTime = token:GetAttribute("SpawnTime") or (token:FindFirstChild("SpawnTime") and token.SpawnTime.Value)
     if spawnTime then
         local age = os.clock() - spawnTime
         local remainingLife = math.max(7 - age, 0)
         local timeToReach = dist / math.max(playerSpeed, 16)
         if timeToReach >= remainingLife then
-            return false -- Cannot reach before token despawns!
+            return false
         end
     end
 
-    -- Max reach distance evaluated dynamically based on speed
     local maxReachDist = math.clamp(playerSpeed * 2.5, 45, 130)
     return dist <= maxReachDist
+end
+
+-- Nearest-Neighbor Look-Ahead Token Chain Builder
+local function getOptimizedTokenChain(hrpPos, fieldCenter, playerSpeed)
+    local collectibles = Workspace:FindFirstChild("Collectibles") or Workspace:FindFirstChild("Tokens")
+    if not collectibles then return {} end
+
+    local validTokens = {}
+    for _, token in ipairs(collectibles:GetChildren()) do
+        if token:IsA("BasePart") and (token.Position - fieldCenter).Magnitude < 52 then
+            if isTokenReachable(token, hrpPos, playerSpeed) then
+                table.insert(validTokens, token)
+            end
+        end
+    end
+
+    local chain = {}
+    local currPos = hrpPos
+    local visited = {}
+
+    for i = 1, math.min(#validTokens, 8) do
+        local bestToken = nil
+        local minDist = 9999
+        for _, token in ipairs(validTokens) do
+            if not visited[token] then
+                local d = (currPos - token.Position).Magnitude
+                if d < minDist then
+                    minDist = d
+                    bestToken = token
+                end
+            end
+        end
+        if bestToken then
+            visited[bestToken] = true
+            table.insert(chain, bestToken)
+            currPos = bestToken.Position
+        else
+            break
+        end
+    end
+
+    return chain
 end
 
 -- Dedicated Auto Dig Tool Swing Loop
@@ -2906,7 +2956,7 @@ task.spawn(function()
     end
 end)
 
--- Main Smooth Non-Stop Movement & Token Queue Engine
+-- Main Look-Ahead Non-Stop Movement & Token Queue Loop
 task.spawn(function()
     local angle = 0
     while task.wait(0.05) do
@@ -2933,27 +2983,19 @@ task.spawn(function()
                     end
                 end
 
-                -- Scan for Reachable Tokens inside the field
-                local collectibles = Workspace:FindFirstChild("Collectibles") or Workspace:FindFirstChild("Tokens")
-                local targetToken = nil
-                if collectibles then
-                    local minDistance = 9999
-                    for _, token in ipairs(collectibles:GetChildren()) do
-                        if (token.Position - center).Magnitude < 50 then
-                            if isTokenReachable(token, hrp.Position, flySpeed) then
-                                local d = (hrp.Position - token.Position).Magnitude
-                                if d < minDistance then
-                                    minDistance = d
-                                    targetToken = token
-                                end
-                            end
-                        end
-                    end
-                end
+                -- Compute Multi-Step Look-Ahead Token Chain
+                local chain = getOptimizedTokenChain(hrp.Position, center, flySpeed)
 
-                if targetToken then
-                    -- Run continuously to reachable token without stopping
-                    hum:MoveTo(targetToken.Position)
+                if #chain > 0 then
+                    local currentTarget = chain[1]
+                    local distToFirst = (hrp.Position - currentTarget.Position).Magnitude
+
+                    -- Look-Ahead Steering: if close to 1st token (<4.5 studs) and 2nd token exists, seamlessly steer towards 2nd token!
+                    if #chain >= 2 and distToFirst < 4.5 then
+                        hum:MoveTo(chain[2].Position)
+                    else
+                        hum:MoveTo(currentTarget.Position)
+                    end
                 else
                     -- Smooth natural patrol without sudden stops
                     angle = angle + 0.08
@@ -2965,7 +3007,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
-                    print("[Berlin v0.1.37] Pollen Full! Traveling smoothly to Hive...")
+                    print("[Berlin v0.1.38] Pollen Full! Traveling smoothly to Hive...")
                     travelToHiveConverter()
                     task.wait(3)
                 end
