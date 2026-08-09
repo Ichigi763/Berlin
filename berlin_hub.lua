@@ -7,7 +7,7 @@ local eleriumUrl = "https://raw.githubusercontent.com/Ichigi763/Berlin/main/eler
 local library = loadstring(game:HttpGet(eleriumUrl, false))()
 
 -- Create Red & Grey Elerium v2 Window (Exact Width fitted to sidebar + content)
-local window = library:AddWindow("Berlin v0.1.1", {
+local window = library:AddWindow("Berlin v0.1.2", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -16,19 +16,19 @@ local window = library:AddWindow("Berlin v0.1.1", {
 
 -- Add Interactive Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1] Searching for:", query)
+    print("[Berlin v0.1.2] Searching for:", query)
 end)
 
--- Add Vertical Sidebar Tabs with User's Chosen Exact Lucide Icons via Elerium
-local homeTab     = window:AddTab("Home", "rbxassetid://6034043960")     -- info (ⓘ)
-local farmTab     = window:AddTab("Farming", "rbxassetid://7733960981")  -- house (🏠)
-local combatTab   = window:AddTab("Combat", "rbxassetid://7733674053")   -- swords (⚔)
-local questsTab   = window:AddTab("Quests", "rbxassetid://7733658504")   -- book (📖)
-local plantersTab = window:AddTab("Planters", "rbxassetid://7733799915") -- tree-pine (🌲)
-local toysTab     = window:AddTab("Toys", "rbxassetid://7733665307")     -- briefcase (💼)
-local webhookTab  = window:AddTab("Webhook", "rbxassetid://7733715400")  -- link (🔗)
-local configTab   = window:AddTab("Config", "rbxassetid://7734053495")   -- settings (⚙)
-local debugTab    = window:AddTab("Debug", "rbxassetid://7733668835")    -- bug (🐛)
+-- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
+local homeTab     = window:AddTab("Home", "rbxassetid://10723415903")     -- info (ⓘ)
+local farmTab     = window:AddTab("Farming", "rbxassetid://10723407092")  -- house (🏠)
+local combatTab   = window:AddTab("Combat", "rbxassetid://10723424705")   -- swords (⚔)
+local questsTab   = window:AddTab("Quests", "rbxassetid://10709781460")   -- book (📖)
+local plantersTab = window:AddTab("Planters", "rbxassetid://10709798444") -- tree-pine (🌲)
+local toysTab     = window:AddTab("Toys", "rbxassetid://10709781615")     -- briefcase (💼)
+local webhookTab  = window:AddTab("Webhook", "rbxassetid://10709782758")  -- link (🔗)
+local configTab   = window:AddTab("Config", "rbxassetid://10709782247")   -- settings (⚙)
+local debugTab    = window:AddTab("Debug", "rbxassetid://10709781709")    -- bug (🐛)
 
 homeTab:Show()
 
