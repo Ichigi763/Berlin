@@ -16,7 +16,7 @@ local label = Instance.new("TextLabel")
 local window = Instance.new("ImageLabel")
 local resizer = Instance.new("Frame")
 local bar = Instance.new("Frame")
-local toggle = Instance.new("ImageButton")
+local toggle = Instance.new("TextButton")
 local base = Instance.new("ImageLabel")
 local top = Instance.new("ImageLabel")
 local tabs = Instance.new("Frame")
@@ -140,10 +140,12 @@ toggle.Parent = bar
 toggle.BackgroundColor3 = Color3.new(1, 1, 1)
 toggle.BackgroundTransparency = 1
 toggle.Position = UDim2.new(1, -25, 0, -2)
-toggle.Rotation = 90
 toggle.Size = UDim2.new(0, 20, 0, 20)
 toggle.ZIndex = 2
-toggle.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
+toggle.Text = "▼"
+toggle.TextColor3 = Color3.new(1, 1, 1)
+toggle.Font = Enum.Font.GothamBold
+toggle.TextSize = 12
 
 base.Name = "Base"
 base.Parent = bar
