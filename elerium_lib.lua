@@ -2034,6 +2034,121 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 
 				end
 
+				
+				function tab_data:AddGroup(group_name, default_open)
+					group_name = tostring(group_name or "New Group")
+					local open_state = (default_open == nil and true or default_open)
+
+					local card = Instance.new("Frame")
+					card.Name = group_name .. "Card"
+					card.Size = UDim2.new(1, 0, 0, 32)
+					card.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+					card.BorderSizePixel = 0
+					card.ClipsDescendants = true
+					card.Parent = new_tab
+
+					local cardCorner = Instance.new("UICorner")
+					cardCorner.CornerRadius = UDim.new(0, 5)
+					cardCorner.Parent = card
+
+					local cardHeader = Instance.new("TextButton")
+					cardHeader.Size = UDim2.new(1, 0, 0, 32)
+					cardHeader.BackgroundTransparency = 1
+					cardHeader.Text = "  " .. group_name
+					cardHeader.TextColor3 = Color3.fromRGB(240, 240, 255)
+					cardHeader.TextSize = 13
+					cardHeader.Font = Enum.Font.GothamBold
+					cardHeader.TextXAlignment = Enum.TextXAlignment.Left
+					cardHeader.ZIndex = 5
+					cardHeader.Parent = card
+
+					local arrow = Instance.new("TextLabel")
+					arrow.Size = UDim2.new(0, 20, 1, 0)
+					arrow.Position = UDim2.new(1, -24, 0, 0)
+					arrow.BackgroundTransparency = 1
+					arrow.Text = open_state and "▼" or "◄"
+					arrow.TextColor3 = Color3.fromRGB(255, 255, 255)
+					arrow.TextSize = 11
+					arrow.Font = Enum.Font.GothamBold
+					arrow.ZIndex = 6
+					arrow.Parent = cardHeader
+
+					local container = Instance.new("Frame")
+					container.Name = "Container"
+					container.Size = UDim2.new(1, -16, 0, 0)
+					container.Position = UDim2.new(0, 8, 0, 34)
+					container.BackgroundTransparency = 1
+					container.Visible = open_state
+					container.ZIndex = 5
+					container.Parent = card
+
+					local cardList = Instance.new("UIListLayout")
+					cardList.Padding = UDim.new(0, 6)
+					cardList.Parent = container
+
+					local function updateCardSize()
+						if open_state then
+							card.Size = UDim2.new(1, 0, 0, cardList.AbsoluteContentSize.Y + 42)
+						else
+							card.Size = UDim2.new(1, 0, 0, 32)
+						end
+					end
+
+					cardList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCardSize)
+
+					cardHeader.MouseButton1Click:Connect(function()
+						open_state = not open_state
+						arrow.Text = open_state and "▼" or "◄"
+						container.Visible = open_state
+						updateCardSize()
+					end)
+
+					local group_data = {}
+
+					function group_data:AddSwitch(switch_name, callback)
+						local ret = {tab_data:AddSwitch(switch_name, callback)}
+						local obj = ret[#ret]
+						if obj then obj.Parent = container end
+						updateCardSize()
+						return unpack(ret)
+					end
+
+					function group_data:AddDropdown(dd_name, callback, options)
+						local ret = {tab_data:AddDropdown(dd_name, callback, options)}
+						local obj = ret[#ret]
+						if obj then obj.Parent = container end
+						updateCardSize()
+						return unpack(ret)
+					end
+
+					function group_data:AddSlider(slider_name, callback, slider_options)
+						local ret = {tab_data:AddSlider(slider_name, callback, slider_options)}
+						local obj = ret[#ret]
+						if obj then obj.Parent = container end
+						updateCardSize()
+						return unpack(ret)
+					end
+
+					function group_data:AddButton(btn_name, callback)
+						local ret = {tab_data:AddButton(btn_name, callback)}
+						local obj = ret[#ret]
+						if obj then obj.Parent = container end
+						updateCardSize()
+						return unpack(ret)
+					end
+
+					function group_data:AddLabel(label_text)
+						local ret = {tab_data:AddLabel(label_text)}
+						local obj = ret[#ret]
+						if obj then obj.Parent = container end
+						updateCardSize()
+						return unpack(ret)
+					end
+
+					updateCardSize()
+					return group_data
+				end
+
 				return tab_data, new_tab
 			end
 		end
