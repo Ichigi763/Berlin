@@ -16,7 +16,7 @@ local label = Instance.new("TextLabel")
 local window = Instance.new("ImageLabel")
 local resizer = Instance.new("Frame")
 local bar = Instance.new("Frame")
-local toggle = Instance.new("TextButton")
+local toggle = Instance.new("ImageButton")
 local base = Instance.new("ImageLabel")
 local top = Instance.new("ImageLabel")
 local tabs = Instance.new("Frame")
@@ -140,12 +140,10 @@ toggle.Parent = bar
 toggle.BackgroundColor3 = Color3.new(1, 1, 1)
 toggle.BackgroundTransparency = 1
 toggle.Position = UDim2.new(1, -25, 0, -2)
+toggle.Rotation = 90
 toggle.Size = UDim2.new(0, 20, 0, 20)
 toggle.ZIndex = 2
-toggle.Text = "▼"
-toggle.TextColor3 = Color3.new(1, 1, 1)
-toggle.Font = Enum.Font.GothamBold
-toggle.TextSize = 12
+toggle.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
 
 base.Name = "Base"
 base.Parent = bar
@@ -954,7 +952,6 @@ function library:AddWindow(title, options)
 
 	local Window = prefabs:FindFirstChild("Window"):Clone()
 	Window.Parent = windowsFrame
-	Window.ClipsDescendants = true
 	Window:FindFirstChild("Title").Text = title
 	Window.Size = UDim2.new(0, options.min_size.X, 0, options.min_size.Y)
 	Window.ZIndex = Window.ZIndex + (windows * 10)
@@ -1049,50 +1046,46 @@ function library:AddWindow(title, options)
 		local canopen = true
 
 		local oldwindowdata = {}
-		local oldy = 440
+		local oldy = Window.AbsoluteSize.Y
 		open_close.MouseButton1Click:Connect(function()
 			if canopen then
 				canopen = false
 
 				if open then
-					-- Close / Minimize
+					-- Close
+
 					oldwindowdata = {}
-					if Window:FindFirstChild("TabSelection") then
-						oldwindowdata[Window.TabSelection] = Window.TabSelection.Visible
-						Window.TabSelection.Visible = false
-					end
-					if Window:FindFirstChild("Tabs") then
-						for _, v in ipairs(Window.Tabs:GetChildren()) do
-							if v:IsA("Frame") then
-								oldwindowdata[v] = v.Visible
-								v.Visible = false
-							end
-						end
+					for i,v in pairs(Window:FindFirstChild("Tabs"):GetChildren()) do
+						oldwindowdata[v] = v.Visible
+						v.Visible = false
 					end
 
 					Resizer.Active = false
-					if Window.AbsoluteSize.Y > 50 then
-						oldy = Window.AbsoluteSize.Y
-					end
-					open_close.Text = "◄"
-					Window.ClipsDescendants = true
-					Window.Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 34)
+
+					oldy = Window.AbsoluteSize.Y
+					Resize(open_close, {Rotation = 0}, options.tween_time)
+					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 26)}, options.tween_time)
+					open_close.Parent:FindFirstChild("Base").Transparency = 1
+
 				else
-					-- Open / Expand
-					Window.Size = UDim2.new(0, Window.AbsoluteSize.X, 0, oldy)
-					for tabObj, wasVisible in pairs(oldwindowdata) do
-						if tabObj and tabObj.Parent then
-							tabObj.Visible = wasVisible
-						end
+					-- Open
+
+					for i,v in pairs(oldwindowdata) do
+						i.Visible = v
 					end
 
 					Resizer.Active = true
-					open_close.Text = "▼"
+
+					Resize(open_close, {Rotation = 90}, options.tween_time)
+					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, oldy)}, options.tween_time)
+					open_close.Parent:FindFirstChild("Base").Transparency = 0
+
 				end
 
 				open = not open
-				task.wait(0.1)
+				wait(options.tween_time)
 				canopen = true
+
 			end
 		end)
 	end
@@ -2040,114 +2033,100 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 				end
 
 				
-				function tab_data:AddGroup(group_name, default_open)
-					group_name = tostring(group_name or "New Group")
-					local open_state = (default_open == nil and true or default_open)
+					function tab_data:AddFolder(folder_name, default_open)
+						folder_name = tostring(folder_name or "New Folder")
+						local is_open = (default_open == nil and true or default_open)
 
-					local card = Instance.new("Frame")
-					card.Name = group_name .. "Card"
-					card.Size = UDim2.new(1, 0, 0, 32)
-					card.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
-					card.BorderSizePixel = 0
-					card.ClipsDescendants = true
-					card.Parent = new_tab
+						local new_folder = prefabs:FindFirstChild("Folder"):Clone()
+						new_folder.Parent = new_tab
+						new_folder.Size = UDim2.new(1, 0, 0, 32)
+						new_folder.ClipsDescendants = true
 
-					local cardCorner = Instance.new("UICorner")
-					cardCorner.CornerRadius = UDim.new(0, 5)
-					cardCorner.Parent = card
+						local f_button = new_folder:FindFirstChild("Button")
+						f_button.Text = "  " .. folder_name
+						f_button.Size = UDim2.new(1, 0, 0, 32)
 
-					local cardHeader = Instance.new("TextButton")
-					cardHeader.Size = UDim2.new(1, 0, 0, 32)
-					cardHeader.BackgroundTransparency = 1
-					cardHeader.Text = "  " .. group_name
-					cardHeader.TextColor3 = Color3.fromRGB(240, 240, 255)
-					cardHeader.TextSize = 13
-					cardHeader.Font = Enum.Font.GothamBold
-					cardHeader.TextXAlignment = Enum.TextXAlignment.Left
-					cardHeader.ZIndex = 5
-					cardHeader.Parent = card
+						local f_toggle = f_button:FindFirstChild("Toggle")
+						f_toggle.Position = UDim2.new(1, -25, 0, 6)
+						f_toggle.Rotation = is_open and 90 or 0
 
-					local arrow = Instance.new("TextLabel")
-					arrow.Size = UDim2.new(0, 20, 1, 0)
-					arrow.Position = UDim2.new(1, -24, 0, 0)
-					arrow.BackgroundTransparency = 1
-					arrow.Text = open_state and "▼" or "◄"
-					arrow.TextColor3 = Color3.fromRGB(255, 255, 255)
-					arrow.TextSize = 11
-					arrow.Font = Enum.Font.GothamBold
-					arrow.ZIndex = 6
-					arrow.Parent = cardHeader
+						local f_objects = new_folder:FindFirstChild("Objects")
+						f_objects.Position = UDim2.new(0, 8, 0, 34)
+						f_objects.Size = UDim2.new(1, -16, 0, 0)
+						f_objects.Visible = is_open
 
-					local container = Instance.new("Frame")
-					container.Name = "Container"
-					container.Size = UDim2.new(1, -16, 0, 0)
-					container.Position = UDim2.new(0, 8, 0, 34)
-					container.BackgroundTransparency = 1
-					container.Visible = open_state
-					container.ZIndex = 5
-					container.Parent = card
-
-					local cardList = Instance.new("UIListLayout")
-					cardList.Padding = UDim.new(0, 6)
-					cardList.Parent = container
-
-					local function updateCardSize()
-						if open_state then
-							card.Size = UDim2.new(1, 0, 0, cardList.AbsoluteContentSize.Y + 42)
-						else
-							card.Size = UDim2.new(1, 0, 0, 32)
+						local f_layout = f_objects:FindFirstChildOfClass("UIListLayout")
+						if not f_layout then
+							f_layout = Instance.new("UIListLayout")
+							f_layout.Padding = UDim.new(0, 5)
+							f_layout.Parent = f_objects
 						end
+
+						local function updateFolderSize()
+							if is_open then
+								new_folder.Size = UDim2.new(1, 0, 0, f_layout.AbsoluteContentSize.Y + 42)
+							else
+								new_folder.Size = UDim2.new(1, 0, 0, 32)
+							end
+						end
+
+						f_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateFolderSize)
+
+						f_button.MouseButton1Click:Connect(function()
+							is_open = not is_open
+							f_toggle.Rotation = is_open and 90 or 0
+							f_objects.Visible = is_open
+							updateFolderSize()
+						end)
+
+						local folder_data = {}
+
+						function folder_data:AddSwitch(switch_text, callback)
+							local s_data, s_obj = tab_data:AddSwitch(switch_text, callback)
+							if s_obj then s_obj.Parent = f_objects end
+							updateFolderSize()
+							return s_data, s_obj
+						end
+
+						function folder_data:AddDropdown(dd_text, callback, options)
+							local d_data, d_obj = tab_data:AddDropdown(dd_text, callback, options)
+							if d_obj then d_obj.Parent = f_objects end
+							updateFolderSize()
+							return d_data, d_obj
+						end
+
+						function folder_data:AddSlider(slider_text, callback, slider_options)
+							local sl_data, sl_obj = tab_data:AddSlider(slider_text, callback, slider_options)
+							if sl_obj then sl_obj.Parent = f_objects end
+							updateFolderSize()
+							return sl_data, sl_obj
+						end
+
+						function folder_data:AddButton(button_text, callback)
+							local b_obj = tab_data:AddButton(button_text, callback)
+							if b_obj then b_obj.Parent = f_objects end
+							updateFolderSize()
+							return b_obj
+						end
+
+						function folder_data:AddLabel(label_text)
+							local l_obj = tab_data:AddLabel(label_text)
+							if l_obj then l_obj.Parent = f_objects end
+							updateFolderSize()
+							return l_obj
+						end
+
+						function folder_data:AddGroup(group_name, default_open_g)
+							return tab_data:AddFolder(group_name, default_open_g)
+						end
+
+						updateFolderSize()
+						return folder_data, new_folder
 					end
 
-					cardList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCardSize)
-
-					cardHeader.MouseButton1Click:Connect(function()
-						open_state = not open_state
-						arrow.Text = open_state and "▼" or "◄"
-						container.Visible = open_state
-						updateCardSize()
-					end)
-
-					local group_data = {}
-
-					function group_data:AddSwitch(switch_name, callback)
-						local switch_data, switch_obj = tab_data:AddSwitch(switch_name, callback)
-						if switch_obj then switch_obj.Parent = container end
-						updateCardSize()
-						return switch_data, switch_obj
+					function tab_data:AddGroup(group_name, default_open)
+						return tab_data:AddFolder(group_name, default_open)
 					end
-
-					function group_data:AddDropdown(dd_name, callback, options)
-						local dropdown_data, dropdown_obj = tab_data:AddDropdown(dd_name, callback, options)
-						if dropdown_obj then dropdown_obj.Parent = container end
-						updateCardSize()
-						return dropdown_data, dropdown_obj
-					end
-
-					function group_data:AddSlider(slider_name, callback, slider_options)
-						local slider_data, slider_obj = tab_data:AddSlider(slider_name, callback, slider_options)
-						if slider_obj then slider_obj.Parent = container end
-						updateCardSize()
-						return slider_data, slider_obj
-					end
-
-					function group_data:AddButton(btn_name, callback)
-						local btn_obj = tab_data:AddButton(btn_name, callback)
-						if btn_obj then btn_obj.Parent = container end
-						updateCardSize()
-						return btn_obj
-					end
-
-					function group_data:AddLabel(label_text)
-						local label_obj = tab_data:AddLabel(label_text)
-						if label_obj then label_obj.Parent = container end
-						updateCardSize()
-						return label_obj
-					end
-
-					updateCardSize()
-					return group_data
-				end
 
 				return tab_data, new_tab
 			end

@@ -1,6 +1,6 @@
 -- ============================================================
 -- BERLIN V0.1 | BEE SWARM SIMULATOR
--- MAIN HUB LOADER WITH COLLAPSIBLE GROUPS (ADDGROUP ENGINE)
+-- MAIN HUB LOADER WITH NATIVE ELERIUM FOLDER CARDS
 -- ============================================================
 
 local eleriumUrl = "https://raw.githubusercontent.com/Ichigi763/Berlin/main/elerium_lib.lua?v=" .. tick()
@@ -65,21 +65,21 @@ local startTime = os.time()
 local stopEverything = false
 
 -- ============================================================
--- HOME TAB WITH COLLAPSIBLE "HOME ▼" CARD
+-- HOME TAB WITH NATIVE ELERIUM COLLAPSIBLE FOLDER CARD
 -- ============================================================
-local homeGroup = homeTab:AddGroup("Home", true)
+local homeFolder = homeTab:AddFolder("Home", true)
 
-local uptimeLbl = homeGroup:AddLabel("Uptime: 00:00:00")
-local serverUptimeLbl = homeGroup:AddLabel("Server Uptime: 00:00:00")
-local honeyLbl = homeGroup:AddLabel("Session Honey: 0")
-local hphLbl = homeGroup:AddLabel("Honey per Hour: 0")
+local uptimeLbl = homeFolder:AddLabel("Uptime: 00:00:00")
+local serverUptimeLbl = homeFolder:AddLabel("Server Uptime: 00:00:00")
+local honeyLbl = homeFolder:AddLabel("Session Honey: 0")
+local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
-homeGroup:AddSwitch("Stop Everything", function(state)
+homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
     print("[Berlin v0.1] Stop Everything:", state)
 end)
 
-homeGroup:AddButton("Fly to My Hive", function()
+homeFolder:AddButton("Fly to My Hive", function()
     print("[Berlin v0.1] Flying to My Hive...")
     local hives = Workspace:FindFirstChild("Honeycombs") or Workspace:FindFirstChild("Hives")
     if hives then
@@ -121,41 +121,41 @@ task.spawn(function()
 end)
 
 -- ============================================================
--- FARMING TAB WITH COLLAPSIBLE GROUPS
+-- FARMING TAB WITH NATIVE ELERIUM COLLAPSIBLE FOLDER CARDS
 -- ============================================================
-local farmGroup = farmTab:AddGroup("Farming", true)
+local farmFolder = farmTab:AddFolder("Farming", true)
 local selectedField = "Pine Tree Forest"
 local autoFarmActive = false
 local autoDigActive = false
 
-farmGroup:AddDropdown("Field", function(selected)
+farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
 end, {"Pine Tree Forest", "Sunflower Field", "Mushroom Field", "Dandelion Field", "Pineapple Patch", "Mountain Top Field", "Coconut Field", "Pepper Patch"})
 
-farmGroup:AddSwitch("Autofarm", function(state) autoFarmActive = state end)
-farmGroup:AddSwitch("Auto Sprinkler", function(state) end)
-farmGroup:AddSwitch("Auto Dig", function(state) autoDigActive = state end)
+farmFolder:AddSwitch("Autofarm", function(state) autoFarmActive = state end)
+farmFolder:AddSwitch("Auto Sprinkler", function(state) end)
+farmFolder:AddSwitch("Auto Dig", function(state) autoDigActive = state end)
 
-farmTab:AddGroup("Farm Settings", false)
-farmTab:AddGroup("Convert Settings", false)
-farmTab:AddGroup("Guiding Star Settings", false)
-farmTab:AddGroup("Natro Patterns", false)
-farmTab:AddGroup("Face Settings", false)
+farmTab:AddFolder("Farm Settings", false)
+farmTab:AddFolder("Convert Settings", false)
+farmTab:AddFolder("Guiding Star Settings", false)
+farmTab:AddFolder("Natro Patterns", false)
+farmTab:AddFolder("Face Settings", false)
 
 -- CONFIG TAB
-local configGroup = configTab:AddGroup("Movement Controls", true)
-configGroup:AddSlider("WalkSpeed", function(val)
+local configFolder = configTab:AddFolder("Movement Controls", true)
+configFolder:AddSlider("WalkSpeed", function(val)
     local char = LocalPlayer.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     if hum then hum.WalkSpeed = val end
 end, {min = 16, max = 300, readonly = false})
 
-configGroup:AddSlider("JumpPower", function(val)
+configFolder:AddSlider("JumpPower", function(val)
     local char = LocalPlayer.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     if hum then hum.JumpPower = val end
 end, {min = 50, max = 250, readonly = false})
 
 print("==================================================")
-print("✅ Berlin v0.1 (Elerium Native Collapsible AddGroup API) Ready!")
+print("✅ Berlin v0.1 (Pure Elerium v2 Native Folders Engine) Ready!")
 print("==================================================")
