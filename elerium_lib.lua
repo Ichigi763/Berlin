@@ -1168,6 +1168,9 @@ function library:AddWindow(title, options)
 				local new_button = prefabs:FindFirstChild("TabButton"):Clone()
 				new_button.Name = tab_name .. "TabButton"
 				new_button.Parent = tab_buttons
+				new_button.Font = Enum.Font.GothamBold
+				new_button.TextSize = 13
+				new_button.TextColor3 = Color3.fromRGB(190, 190, 195)
 				new_button.Text = "     " .. tab_name
 				new_button.TextXAlignment = Enum.TextXAlignment.Left
 				new_button.Size = UDim2.new(1, 0, 0, 26)
@@ -1198,6 +1201,8 @@ function library:AddWindow(title, options)
 					icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 					icon.ZIndex = new_button:GetChildren()[1].ZIndex + 10
 					icon.Parent = new_button
+					new_button.Font = Enum.Font.GothamBold
+					new_button.TextSize = 13
 					new_button.Text = "         " .. tab_name
 					new_button.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -1288,6 +1293,8 @@ function library:AddWindow(title, options)
 					if dropdown_open then return end
 					for i, v in pairs(tab_buttons:GetChildren()) do
 						if v:IsA("TextButton") then
+							v.Font = Enum.Font.GothamBold
+							v.TextColor3 = Color3.fromRGB(180, 185, 190)
 							local bgImage = v:FindFirstChildOfClass("ImageLabel")
 							if bgImage and bgImage.Name ~= "Icon" then
 								bgImage.ImageColor3 = Color3.fromRGB(52, 53, 56)
@@ -1298,6 +1305,8 @@ function library:AddWindow(title, options)
 						v.Visible = false
 					end
 
+					new_button.Font = Enum.Font.GothamBold
+					new_button.TextColor3 = Color3.fromRGB(255, 255, 255)
 					local bgImage = new_button:FindFirstChildOfClass("ImageLabel")
 					if bgImage and bgImage.Name ~= "Icon" then
 						bgImage.ImageColor3 = Color3.fromRGB(73, 75, 79)
