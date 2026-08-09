@@ -1063,7 +1063,7 @@ function library:AddWindow(title, options)
 					Resizer.Active = false
 
 					oldy = Window.AbsoluteSize.Y
-					Resize(open_close, {Rotation = 0}, options.tween_time)
+					Resize(open_close, {Rotation = 180}, options.tween_time)
 					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 26)}, options.tween_time)
 					open_close.Parent:FindFirstChild("Base").Transparency = 1
 
@@ -2048,7 +2048,7 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 
 						local f_toggle = f_button:FindFirstChild("Toggle")
 						f_toggle.Position = UDim2.new(1, -25, 0, 6)
-						f_toggle.Rotation = is_open and 90 or 0
+						f_toggle.Rotation = is_open and 90 or 180
 
 						local f_objects = new_folder:FindFirstChild("Objects")
 						f_objects.Position = UDim2.new(0, 8, 0, 34)
@@ -2074,7 +2074,7 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 
 						f_button.MouseButton1Click:Connect(function()
 							is_open = not is_open
-							f_toggle.Rotation = is_open and 90 or 0
+							f_toggle.Rotation = is_open and 90 or 180
 							f_objects.Visible = is_open
 							updateFolderSize()
 						end)
