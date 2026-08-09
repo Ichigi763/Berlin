@@ -3,7 +3,7 @@
 -- MAIN GITHUB LOADER SCRIPT
 -- ============================================================
 
-local eleriumUrl = "https://raw.githubusercontent.com/Ichigi763/Berlin/main/elerium_lib.lua?v=" .. tick()
+local eleriumUrl = "https://raw.githubusercontent.com/Ichigi763/Berlin/main/elerium_lib.lua?nocache=" .. os.time() .. "_" .. math.random(1000, 9999)
 local library = loadstring(game:HttpGet(eleriumUrl, false))()
 
 -- Create Red & Grey Elerium v2 Window (Exact Width fitted to sidebar + content)
