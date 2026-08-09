@@ -1608,9 +1608,17 @@ function library:AddWindow(title, options)
 
 						local baseZ = (windows * 10) + 20
 
+						local dropdownHolder = Instance.new("Frame")
+						dropdownHolder.Name = dropdown_name .. "DropdownHolder"
+						dropdownHolder.Parent = new_tab
+						dropdownHolder.Size = UDim2.new(1, 0, 0, 26)
+						dropdownHolder.BackgroundTransparency = 1
+						dropdownHolder.BorderSizePixel = 0
+						dropdownHolder.ZIndex = baseZ
+
 						local dropdown = Instance.new("TextButton")
-						dropdown.Name = dropdown_name .. "Dropdown"
-						dropdown.Parent = new_tab
+						dropdown.Name = dropdown_name .. "DropdownButton"
+						dropdown.Parent = dropdownHolder
 						dropdown.Size = UDim2.new(1, 0, 0, 26)
 						dropdown.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
 						dropdown.BorderSizePixel = 0
@@ -1624,7 +1632,7 @@ function library:AddWindow(title, options)
 							initialText = dropdown_name .. ": " .. tostring(options_array[1])
 						end
 						dropdown.Text = "   " .. initialText
-						dropdown.ZIndex = baseZ
+						dropdown.ZIndex = baseZ + 1
 
 						local d_corner = Instance.new("UICorner")
 						d_corner.CornerRadius = UDim.new(0, 5)
@@ -1638,18 +1646,19 @@ function library:AddWindow(title, options)
 						indicator.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
 						indicator.ImageColor3 = Color3.fromRGB(240, 240, 240)
 						indicator.Rotation = 180
-						indicator.ZIndex = baseZ + 1
+						indicator.ZIndex = baseZ + 2
 						indicator.Parent = dropdown
 
 						local box = Instance.new("Frame")
 						box.Name = "Box"
-						box.Parent = dropdown
-						box.Position = UDim2.new(0, 0, 1, 3)
+						box.Parent = dropdownHolder
+						box.Position = UDim2.new(0, 0, 0, 30)
 						box.Size = UDim2.new(1, 0, 0, 0)
-						box.BackgroundColor3 = Color3.fromRGB(26, 27, 33)
+						box.BackgroundColor3 = Color3.fromRGB(20, 21, 26) -- Solid opaque dark background
+						box.BackgroundTransparency = 0
 						box.BorderSizePixel = 0
 						box.ClipsDescendants = true
-						box.ZIndex = baseZ + 50
+						box.ZIndex = baseZ + 3
 						box.Visible = false
 
 						local boxCorner = Instance.new("UICorner")
@@ -1663,23 +1672,48 @@ function library:AddWindow(title, options)
 						objects.BackgroundTransparency = 1
 						objects.BorderSizePixel = 0
 						objects.ScrollBarThickness = 3
-						objects.ZIndex = baseZ + 51
+						objects.ZIndex = baseZ + 4
+						objects.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 						local objLayout = Instance.new("UIListLayout")
 						objLayout.Padding = UDim.new(0, 2)
 						objLayout.Parent = objects
 
 						local open = false
+
+						local function updateParentFolder()
+							local p = dropdownHolder.Parent
+							while p and not p.Name:find("Folder") and p ~= game do
+								p = p.Parent
+							end
+							if p and p:FindFirstChild("Button") then
+								local folderBtn = p:FindFirstChild("Button")
+								-- Trigger folder UIListLayout resize
+								local f_objects = p:FindFirstChild("Objects")
+								if f_objects then
+									local f_layout = f_objects:FindFirstChildOfClass("UIListLayout")
+									if f_layout then
+										local totalH = f_layout.AbsoluteContentSize.Y
+										p.Size = UDim2.new(1, -6, 0, totalH + 42)
+									end
+								end
+							end
+						end
+
 						dropdown.MouseButton1Click:Connect(function()
 							open = not open
 							local count = #objects:GetChildren() - 1
-							local len = math.clamp(count * 24, 24, 200)
+							local len = math.clamp(count * 24, 24, 180)
+							objects.CanvasSize = UDim2.new(0, 0, 0, count * 24)
 
 							if open then
 								box.Visible = true
+								dropdownHolder.Size = UDim2.new(1, 0, 0, 26 + len + 6)
 								Resize(box, {Size = UDim2.new(1, 0, 0, len)}, options.tween_time)
 								Resize(indicator, {Rotation = 90}, options.tween_time)
+								task.delay(0.05, updateParentFolder)
 							else
+								dropdownHolder.Size = UDim2.new(1, 0, 0, 26)
 								Resize(indicator, {Rotation = 180}, options.tween_time)
 								local t = Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
 								if t then
@@ -1689,6 +1723,7 @@ function library:AddWindow(title, options)
 								else
 									box.Visible = false
 								end
+								task.delay(0.05, updateParentFolder)
 							end
 						end)
 
@@ -1707,7 +1742,7 @@ function library:AddWindow(title, options)
 							object.TextColor3 = Color3.fromRGB(220, 220, 220)
 							object.Text = "  " .. n
 							object.TextXAlignment = Enum.TextXAlignment.Left
-							object.ZIndex = baseZ + 52
+							object.ZIndex = baseZ + 5
 
 							local oCorner = Instance.new("UICorner")
 							oCorner.CornerRadius = UDim.new(0, 4)
@@ -1723,6 +1758,7 @@ function library:AddWindow(title, options)
 							object.MouseButton1Click:Connect(function()
 								dropdown.Text = "   " .. dropdown_name .. ": " .. n
 								open = false
+								dropdownHolder.Size = UDim2.new(1, 0, 0, 26)
 								Resize(indicator, {Rotation = 180}, options.tween_time)
 								local t = Resize(box, {Size = UDim2.new(1, 0, 0, 0)}, options.tween_time)
 								if t then
@@ -1732,6 +1768,7 @@ function library:AddWindow(title, options)
 								else
 									box.Visible = false
 								end
+								task.delay(0.05, updateParentFolder)
 								pcall(callback, n)
 							end)
 
@@ -1744,7 +1781,7 @@ function library:AddWindow(title, options)
 							end
 						end
 
-						return dropdown_data, dropdown
+						return dropdown_data, dropdownHolder
 					end
 
 					function tab_data:AddColorPicker(callback)
