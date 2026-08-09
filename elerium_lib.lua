@@ -1234,34 +1234,53 @@ function library:AddWindow(title, options)
 				new_tab.Parent = tabs
 				new_tab.ZIndex = new_tab.ZIndex + (windows * 10)
 
+				-- Destroy vertical UIListLayout on new_tab so columns sit side-by-side
+				local default_layout = new_tab:FindFirstChildOfClass("UIListLayout")
+				if default_layout then
+					default_layout:Destroy()
+				end
+
 				local left_col = Instance.new("ScrollingFrame")
 				left_col.Name = "LeftColumn"
-				left_col.Size = UDim2.new(0.493, 0, 1, 0)
+				left_col.Size = UDim2.new(0.49, 0, 1, 0)
 				left_col.Position = UDim2.new(0, 0, 0, 0)
 				left_col.BackgroundTransparency = 1
 				left_col.BorderSizePixel = 0
-				left_col.ScrollBarThickness = 2
+				left_col.ScrollBarThickness = 3
+				left_col.CanvasSize = UDim2.new(0, 0, 0, 0)
 				left_col.Parent = new_tab
 
 				local left_layout = Instance.new("UIListLayout")
-				left_layout.Padding = UDim.new(0, 8)
+				left_layout.Padding = UDim.new(0, 6)
+				left_layout.SortOrder = Enum.SortOrder.LayoutOrder
 				left_layout.Parent = left_col
+
+				left_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+					left_col.CanvasSize = UDim2.new(0, 0, 0, left_layout.AbsoluteContentSize.Y + 10)
+				end)
 
 				local right_col = Instance.new("ScrollingFrame")
 				right_col.Name = "RightColumn"
-				right_col.Size = UDim2.new(0.493, 0, 1, 0)
-				right_col.Position = UDim2.new(0.507, 0, 0, 0)
+				right_col.Size = UDim2.new(0.49, 0, 1, 0)
+				right_col.Position = UDim2.new(0.51, 0, 0, 0)
 				right_col.BackgroundTransparency = 1
 				right_col.BorderSizePixel = 0
-				right_col.ScrollBarThickness = 2
+				right_col.ScrollBarThickness = 3
+				right_col.CanvasSize = UDim2.new(0, 0, 0, 0)
 				right_col.Parent = new_tab
 
 				local right_layout = Instance.new("UIListLayout")
-				right_layout.Padding = UDim.new(0, 8)
+				right_layout.Padding = UDim.new(0, 6)
+				right_layout.SortOrder = Enum.SortOrder.LayoutOrder
 				right_layout.Parent = right_col
+
+				right_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+					right_col.CanvasSize = UDim2.new(0, 0, 0, right_layout.AbsoluteContentSize.Y + 10)
+				end)
 
 				tab_data.LeftCol = left_col
 				tab_data.RightCol = right_col
+				tab_data.TabFrame = new_tab
 
 				local function show()
 					if dropdown_open then return end
