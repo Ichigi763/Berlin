@@ -1120,7 +1120,7 @@ function library:AddWindow(title, options)
 				searchIcon.Size = UDim2.new(0, 14, 0, 14)
 				searchIcon.Position = UDim2.new(0, 6, 0.5, -7)
 				searchIcon.BackgroundTransparency = 1
-				searchIcon.Image = "rbxassetid://10709782230"
+				searchIcon.Image = "rbxassetid://6031154871"
 				searchIcon.ImageColor3 = Color3.fromRGB(180, 180, 200)
 				searchIcon.ZIndex = 7
 				searchIcon.Parent = searchFrame
