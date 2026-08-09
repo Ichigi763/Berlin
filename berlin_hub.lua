@@ -2196,16 +2196,16 @@ local searchInput = window:AddSearchBox(function(query)
     print("[Berlin v0.1] Searching for:", query)
 end)
 
--- Add Vertical Sidebar Tabs with Lucide Icons via Elerium
-local homeTab     = window:AddTab("Home", "rbxassetid://10723407092")
-local farmTab     = window:AddTab("Farming", "rbxassetid://10723346959")
-local combatTab   = window:AddTab("Combat", "rbxassetid://10723424705")
-local questsTab   = window:AddTab("Quests", "rbxassetid://10709782582")
-local plantersTab = window:AddTab("Planters", "rbxassetid://10709782845")
-local toysTab     = window:AddTab("Toys", "rbxassetid://10723434791")
-local webhookTab  = window:AddTab("Webhook", "rbxassetid://10709782845")
-local configTab   = window:AddTab("Config", "rbxassetid://10709782247")
-local debugTab    = window:AddTab("Debug", "rbxassetid://10709782500")
+-- Add Vertical Sidebar Tabs with User's Chosen Lucide Icons via Elerium
+local homeTab     = window:AddTab("Home", "rbxassetid://10709782356")     -- info
+local farmTab     = window:AddTab("Farming", "rbxassetid://10723407092")  -- house
+local combatTab   = window:AddTab("Combat", "rbxassetid://10723424705")   -- swords
+local questsTab   = window:AddTab("Quests", "rbxassetid://10709782414")   -- book
+local plantersTab = window:AddTab("Planters", "rbxassetid://10709782845") -- tree-pine
+local toysTab     = window:AddTab("Toys", "rbxassetid://10709782500")     -- briefcase
+local webhookTab  = window:AddTab("Webhook", "rbxassetid://10709782582")  -- link
+local configTab   = window:AddTab("Config", "rbxassetid://10709782247")   -- settings
+local debugTab    = window:AddTab("Debug", "rbxassetid://10709782150")    -- bug
 
 homeTab:Show()
 
