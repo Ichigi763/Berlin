@@ -351,7 +351,7 @@ dropdownIndicator.Position = UDim2.new(0.899999976, -10, 0.100000001, 0)
 dropdownIndicator.Rotation = -90
 dropdownIndicator.Size = UDim2.new(0, 15, 0, 15)
 dropdownIndicator.ZIndex = 2
-dropdownIndicator.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4744658743"
+dropdownIndicator.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
 
 dropdownBox.Name = "Box"
 dropdownBox.Parent = dropdown
@@ -2178,17 +2178,17 @@ function library:AddWindow(title, options)
 						f_corner.CornerRadius = UDim.new(0, 5)
 						f_corner.Parent = f_button
 
-						-- Original White Chevron Arrow Icon (Matching Top Bar Toggle)
+						-- Original Window Toggle Arrow Asset (assetId=4731371541)
 						local arrow = Instance.new("ImageLabel")
 						arrow.Name = "ArrowIcon"
-						arrow.Size = UDim2.new(0, 14, 0, 14)
-						arrow.Position = UDim2.new(1, -22, 0.5, -7)
+						arrow.Size = UDim2.new(0, 16, 0, 16)
+						arrow.Position = UDim2.new(1, -24, 0.5, -8)
 						arrow.BackgroundTransparency = 1
-						arrow.Image = "rbxassetid://6031094678" -- White Chevron Triangle Icon
-						arrow.ImageColor3 = Color3.fromRGB(220, 220, 220)
+						arrow.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
+						arrow.ImageColor3 = Color3.fromRGB(240, 240, 240)
 						arrow.ZIndex = baseZ + 2
 						arrow.Parent = f_button
-						arrow.Rotation = is_open and 0 or -90
+						arrow.Rotation = is_open and 90 or 0
 
 						local f_objects = Instance.new("Frame")
 						f_objects.Name = "Objects"
@@ -2224,10 +2224,10 @@ function library:AddWindow(title, options)
 								new_folder.BackgroundTransparency = 0
 								f_objects.Visible = true
 								if animate then
-									Resize(arrow, {Rotation = 0}, 0.2)
+									Resize(arrow, {Rotation = 90}, 0.2)
 									Resize(new_folder, {Size = UDim2.new(1, -6, 0, h + 42)}, 0.2)
 								else
-									arrow.Rotation = 0
+									arrow.Rotation = 90
 									new_folder.Size = UDim2.new(1, -6, 0, h + 42)
 								end
 								task.delay(0.2, function()
@@ -2239,7 +2239,7 @@ function library:AddWindow(title, options)
 								new_folder.BackgroundTransparency = 0
 								new_folder.ClipsDescendants = true
 								if animate then
-									Resize(arrow, {Rotation = -90}, 0.2)
+									Resize(arrow, {Rotation = 0}, 0.2)
 									local t = Resize(new_folder, {Size = UDim2.new(1, -6, 0, 32)}, 0.2)
 									if t then
 										t.Completed:Connect(function()
@@ -2247,7 +2247,7 @@ function library:AddWindow(title, options)
 										end)
 									end
 								else
-									arrow.Rotation = -90
+									arrow.Rotation = 0
 									new_folder.Size = UDim2.new(1, -6, 0, 32)
 									f_objects.Visible = false
 								end

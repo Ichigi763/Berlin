@@ -1,5 +1,5 @@
 -- ============================================================
--- BERLIN V0.1.28 | BEE SWARM SIMULATOR
+-- BERLIN V0.1.29 | BEE SWARM SIMULATOR
 -- MAIN SINGLE FILE LOADER - EXACT ATLAS V1.0 MATCH
 -- ============================================================
 
@@ -357,7 +357,7 @@ dropdownIndicator.Position = UDim2.new(0.899999976, -10, 0.100000001, 0)
 dropdownIndicator.Rotation = -90
 dropdownIndicator.Size = UDim2.new(0, 15, 0, 15)
 dropdownIndicator.ZIndex = 2
-dropdownIndicator.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4744658743"
+dropdownIndicator.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
 
 dropdownBox.Name = "Box"
 dropdownBox.Parent = dropdown
@@ -2184,17 +2184,17 @@ function library:AddWindow(title, options)
 						f_corner.CornerRadius = UDim.new(0, 5)
 						f_corner.Parent = f_button
 
-						-- Original White Chevron Arrow Icon (Matching Top Bar Toggle)
+						-- Original Window Toggle Arrow Asset (assetId=4731371541)
 						local arrow = Instance.new("ImageLabel")
 						arrow.Name = "ArrowIcon"
-						arrow.Size = UDim2.new(0, 14, 0, 14)
-						arrow.Position = UDim2.new(1, -22, 0.5, -7)
+						arrow.Size = UDim2.new(0, 16, 0, 16)
+						arrow.Position = UDim2.new(1, -24, 0.5, -8)
 						arrow.BackgroundTransparency = 1
-						arrow.Image = "rbxassetid://6031094678" -- White Chevron Triangle Icon
-						arrow.ImageColor3 = Color3.fromRGB(220, 220, 220)
+						arrow.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
+						arrow.ImageColor3 = Color3.fromRGB(240, 240, 240)
 						arrow.ZIndex = baseZ + 2
 						arrow.Parent = f_button
-						arrow.Rotation = is_open and 0 or -90
+						arrow.Rotation = is_open and 90 or 0
 
 						local f_objects = Instance.new("Frame")
 						f_objects.Name = "Objects"
@@ -2230,10 +2230,10 @@ function library:AddWindow(title, options)
 								new_folder.BackgroundTransparency = 0
 								f_objects.Visible = true
 								if animate then
-									Resize(arrow, {Rotation = 0}, 0.2)
+									Resize(arrow, {Rotation = 90}, 0.2)
 									Resize(new_folder, {Size = UDim2.new(1, -6, 0, h + 42)}, 0.2)
 								else
-									arrow.Rotation = 0
+									arrow.Rotation = 90
 									new_folder.Size = UDim2.new(1, -6, 0, h + 42)
 								end
 								task.delay(0.2, function()
@@ -2245,7 +2245,7 @@ function library:AddWindow(title, options)
 								new_folder.BackgroundTransparency = 0
 								new_folder.ClipsDescendants = true
 								if animate then
-									Resize(arrow, {Rotation = -90}, 0.2)
+									Resize(arrow, {Rotation = 0}, 0.2)
 									local t = Resize(new_folder, {Size = UDim2.new(1, -6, 0, 32)}, 0.2)
 									if t then
 										t.Completed:Connect(function()
@@ -2253,7 +2253,7 @@ function library:AddWindow(title, options)
 										end)
 									end
 								else
-									arrow.Rotation = -90
+									arrow.Rotation = 0
 									new_folder.Size = UDim2.new(1, -6, 0, 32)
 									f_objects.Visible = false
 								end
@@ -2369,7 +2369,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.28", {
+local window = library:AddWindow("Berlin v0.1.29", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2378,7 +2378,7 @@ local window = library:AddWindow("Berlin v0.1.28", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.28] Searching for:", query)
+    print("[Berlin v0.1.29] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2465,7 +2465,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.28] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    print("[Berlin v0.1.29] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2498,7 +2498,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.28] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.29] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2506,7 +2506,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.28] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.29] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2515,7 +2515,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.28] Used Buff:", itemName)
+        print("[Berlin v0.1.29] Used Buff:", itemName)
     end
 end
 
@@ -2524,7 +2524,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.28] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.29] Collected Dispenser:", toyName)
     end
 end
 
@@ -2533,7 +2533,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.28] Took Quest from:", npcName)
+        print("[Berlin v0.1.29] Took Quest from:", npcName)
     end
 end
 
@@ -2549,11 +2549,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.28] Stop Everything:", state)
+    print("[Berlin v0.1.29] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.28] Traveling to Hive Converter...")
+    print("[Berlin v0.1.29] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2594,12 +2594,12 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.28] Selected Field:", selectedField)
+    print("[Berlin v0.1.29] Selected Field:", selectedField)
 end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.28] Autofarm:", state)
+    print("[Berlin v0.1.29] Autofarm:", state)
 end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
@@ -2666,7 +2666,7 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.28] Fly Speed set to:", val)
+    print("[Berlin v0.1.29] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("WalkSpeed", function(val)
@@ -2744,7 +2744,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and pollen.Value >= capacity.Value and capacity.Value > 0 then
-                    print("[Berlin v0.1.28] Pollen Full! Traveling to Hive...")
+                    print("[Berlin v0.1.29] Pollen Full! Traveling to Hive...")
                     travelToHiveConverter()
                     task.wait(4)
                 end
