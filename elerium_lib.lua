@@ -2276,10 +2276,29 @@ function library:AddWindow(title, options)
 
 						local function updateFolderSize()
 							if is_open then
+								f_button.BackgroundColor3 = Color3.fromRGB(42, 44, 52) -- Open Dark Slate Header
+								new_folder.BackgroundColor3 = Color3.fromRGB(26, 27, 33) -- Open Outer Container Card
+								new_folder.BackgroundTransparency = 0
+								arrow.Text = "▼"
+								f_objects.Visible = true
 								local h = f_layout.AbsoluteContentSize.Y
-								new_folder.Size = UDim2.new(1, 0, 0, h + 38)
+								if h == 0 then
+									local count = 0
+									for _, child in ipairs(f_objects:GetChildren()) do
+										if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
+											count = count + 1
+										end
+									end
+									h = count * 26
+								end
+								new_folder.Size = UDim2.new(1, 0, 0, h + 42)
 								new_folder.ClipsDescendants = false
 							else
+								f_button.BackgroundColor3 = Color3.fromRGB(36, 37, 44) -- Closed Compact Pill Header Bar
+								new_folder.BackgroundColor3 = Color3.fromRGB(36, 37, 44) -- Match Closed Pill Color
+								new_folder.BackgroundTransparency = 0
+								arrow.Text = "◀"
+								f_objects.Visible = false
 								new_folder.Size = UDim2.new(1, 0, 0, 32)
 								new_folder.ClipsDescendants = true
 							end
@@ -2290,8 +2309,6 @@ function library:AddWindow(title, options)
 
 						local function toggleFolder()
 							is_open = not is_open
-							arrow.Text = is_open and "▼" or "◀"
-							f_objects.Visible = is_open
 							updateFolderSize()
 						end
 
