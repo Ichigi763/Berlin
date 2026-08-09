@@ -1,10 +1,11 @@
 -- ============================================================
--- BERLIN V0.1.23 | BEE SWARM SIMULATOR
+-- BERLIN V0.1.24 | BEE SWARM SIMULATOR
 -- MAIN SINGLE FILE LOADER - EXACT ATLAS V1.0 MATCH
 -- ============================================================
 
+local library = (function()
 local library = {}
-do
+
 local ui_options = {
 	main_color = Color3.fromRGB(180, 30, 40),
 	min_size = Vector2.new(400, 300),
@@ -94,7 +95,8 @@ local CoreGui= cloneref(game:GetService("CoreGui"))
 
 
 imgui.Name = "imgui"
-imgui.Parent = gethui and gethui() or (CoreGui or game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+local playersSvc = game:GetService("Players")
+imgui.Parent = gethui and gethui() or (CoreGui or (playersSvc.LocalPlayer and playersSvc.LocalPlayer:WaitForChild("PlayerGui")))
 prefabs.Name = "Prefabs"
 prefabs.Parent = imgui
 prefabs.BackgroundColor3 = Color3.new(1, 1, 1)
@@ -106,7 +108,7 @@ label.Parent = prefabs
 label.BackgroundColor3 = Color3.new(1, 1, 1)
 label.BackgroundTransparency = 1
 label.Size = UDim2.new(0, 200, 0, 20)
-label.Font = Enum.Font.GothamSemibold
+label.Font = Enum.Font.GothamMedium
 label.Text = "Hello, world 123"
 label.TextColor3 = Color3.new(1, 1, 1)
 label.TextSize = 14
@@ -240,7 +242,7 @@ textBox.BackgroundTransparency = 1
 textBox.BorderSizePixel = 0
 textBox.Size = UDim2.new(1, 0, 0, 20)
 textBox.ZIndex = 2
-textBox.Font = Enum.Font.GothamSemibold
+textBox.Font = Enum.Font.GothamMedium
 textBox.PlaceholderColor3 = Color3.new(0.698039, 0.698039, 0.698039)
 textBox.PlaceholderText = "Input Text"
 textBox.Text = ""
@@ -400,7 +402,7 @@ tabButton.BorderSizePixel = 0
 tabButton.Position = UDim2.new(0.185185179, 0, 0, 0)
 tabButton.Size = UDim2.new(0, 71, 0, 20)
 tabButton.ZIndex = 2
-tabButton.Font = Enum.Font.GothamSemibold
+tabButton.Font = Enum.Font.GothamMedium
 tabButton.Text = "Test tab"
 tabButton.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
 tabButton.TextSize = 14
@@ -433,7 +435,7 @@ button.BackgroundTransparency = 1
 button.BorderSizePixel = 0
 button.Size = UDim2.new(1, 0, 0, 20)
 button.ZIndex = 2
-button.Font = Enum.Font.GothamSemibold
+button.Font = Enum.Font.GothamMedium
 button.Text = "      Folder"
 button.TextColor3 = Color3.new(1, 1, 1)
 button.TextSize = 14
@@ -720,7 +722,7 @@ title3Label.BackgroundColor3 = Color3.new(1, 1, 1)
 title3Label.BackgroundTransparency = 1
 title3Label.Position = UDim2.new(1.20000005, 0, 0, 0)
 title3Label.Size = UDim2.new(0, 20, 0, 20)
-title3Label.Font = Enum.Font.GothamSemibold
+title3Label.Font = Enum.Font.GothamMedium
 title3Label.Text = "Switch"
 title3Label.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
 title3Label.TextSize = 14
@@ -733,7 +735,7 @@ button2.BackgroundTransparency = 1
 button2.BorderSizePixel = 0
 button2.Size = UDim2.new(0, 91, 0, 20)
 button2.ZIndex = 2
-button2.Font = Enum.Font.GothamSemibold
+button2.Font = Enum.Font.GothamMedium
 button2.TextColor3 = Color3.new(1, 1, 1)
 button2.TextSize = 14
 
@@ -788,7 +790,7 @@ inputButton.BorderSizePixel = 0
 inputButton.Position = UDim2.new(1, -85, 0, 2)
 inputButton.Size = UDim2.new(0, 80, 1, -4)
 inputButton.ZIndex = 2
-inputButton.Font = Enum.Font.GothamSemibold
+inputButton.Font = Enum.Font.GothamMedium
 inputButton.Text = "RShift"
 inputButton.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
 inputButton.TextSize = 12
@@ -885,6 +887,7 @@ local function hasprop(object, prop)
 	if a then
 		return b
 	end
+	return false
 end
 
 local function gNameLen(obj)
@@ -2309,11 +2312,11 @@ function library:AddWindow(title, options)
 end
 
 
-    library = library
-end
+return library
+end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.23", {
+local window = library:AddWindow("Berlin v0.1.24", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2322,7 +2325,7 @@ local window = library:AddWindow("Berlin v0.1.23", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.23] Searching for:", query)
+    print("[Berlin v0.1.24] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2409,7 +2412,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.23] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    print("[Berlin v0.1.24] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2442,7 +2445,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.23] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.24] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2450,7 +2453,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.23] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.24] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2459,7 +2462,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.23] Used Buff:", itemName)
+        print("[Berlin v0.1.24] Used Buff:", itemName)
     end
 end
 
@@ -2468,7 +2471,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.23] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.24] Collected Dispenser:", toyName)
     end
 end
 
@@ -2477,7 +2480,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.23] Took Quest from:", npcName)
+        print("[Berlin v0.1.24] Took Quest from:", npcName)
     end
 end
 
@@ -2493,11 +2496,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.23] Stop Everything:", state)
+    print("[Berlin v0.1.24] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.23] Traveling to Hive Converter...")
+    print("[Berlin v0.1.24] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2538,12 +2541,12 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.23] Selected Field:", selectedField)
+    print("[Berlin v0.1.24] Selected Field:", selectedField)
 end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.23] Autofarm:", state)
+    print("[Berlin v0.1.24] Autofarm:", state)
 end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
@@ -2610,7 +2613,7 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.23] Fly Speed set to:", val)
+    print("[Berlin v0.1.24] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("WalkSpeed", function(val)
@@ -2688,7 +2691,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and pollen.Value >= capacity.Value and capacity.Value > 0 then
-                    print("[Berlin v0.1.23] Pollen Full! Traveling to Hive...")
+                    print("[Berlin v0.1.24] Pollen Full! Traveling to Hive...")
                     travelToHiveConverter()
                     task.wait(4)
                 end

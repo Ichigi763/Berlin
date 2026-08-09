@@ -1,3 +1,5 @@
+local library = {}
+
 local ui_options = {
 	main_color = Color3.fromRGB(180, 30, 40),
 	min_size = Vector2.new(400, 300),
@@ -87,7 +89,8 @@ local CoreGui= cloneref(game:GetService("CoreGui"))
 
 
 imgui.Name = "imgui"
-imgui.Parent = gethui and gethui() or (CoreGui or game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+local playersSvc = game:GetService("Players")
+imgui.Parent = gethui and gethui() or (CoreGui or (playersSvc.LocalPlayer and playersSvc.LocalPlayer:WaitForChild("PlayerGui")))
 prefabs.Name = "Prefabs"
 prefabs.Parent = imgui
 prefabs.BackgroundColor3 = Color3.new(1, 1, 1)
@@ -99,7 +102,7 @@ label.Parent = prefabs
 label.BackgroundColor3 = Color3.new(1, 1, 1)
 label.BackgroundTransparency = 1
 label.Size = UDim2.new(0, 200, 0, 20)
-label.Font = Enum.Font.GothamSemibold
+label.Font = Enum.Font.GothamMedium
 label.Text = "Hello, world 123"
 label.TextColor3 = Color3.new(1, 1, 1)
 label.TextSize = 14
@@ -233,7 +236,7 @@ textBox.BackgroundTransparency = 1
 textBox.BorderSizePixel = 0
 textBox.Size = UDim2.new(1, 0, 0, 20)
 textBox.ZIndex = 2
-textBox.Font = Enum.Font.GothamSemibold
+textBox.Font = Enum.Font.GothamMedium
 textBox.PlaceholderColor3 = Color3.new(0.698039, 0.698039, 0.698039)
 textBox.PlaceholderText = "Input Text"
 textBox.Text = ""
@@ -393,7 +396,7 @@ tabButton.BorderSizePixel = 0
 tabButton.Position = UDim2.new(0.185185179, 0, 0, 0)
 tabButton.Size = UDim2.new(0, 71, 0, 20)
 tabButton.ZIndex = 2
-tabButton.Font = Enum.Font.GothamSemibold
+tabButton.Font = Enum.Font.GothamMedium
 tabButton.Text = "Test tab"
 tabButton.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
 tabButton.TextSize = 14
@@ -426,7 +429,7 @@ button.BackgroundTransparency = 1
 button.BorderSizePixel = 0
 button.Size = UDim2.new(1, 0, 0, 20)
 button.ZIndex = 2
-button.Font = Enum.Font.GothamSemibold
+button.Font = Enum.Font.GothamMedium
 button.Text = "      Folder"
 button.TextColor3 = Color3.new(1, 1, 1)
 button.TextSize = 14
@@ -713,7 +716,7 @@ title3Label.BackgroundColor3 = Color3.new(1, 1, 1)
 title3Label.BackgroundTransparency = 1
 title3Label.Position = UDim2.new(1.20000005, 0, 0, 0)
 title3Label.Size = UDim2.new(0, 20, 0, 20)
-title3Label.Font = Enum.Font.GothamSemibold
+title3Label.Font = Enum.Font.GothamMedium
 title3Label.Text = "Switch"
 title3Label.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
 title3Label.TextSize = 14
@@ -726,7 +729,7 @@ button2.BackgroundTransparency = 1
 button2.BorderSizePixel = 0
 button2.Size = UDim2.new(0, 91, 0, 20)
 button2.ZIndex = 2
-button2.Font = Enum.Font.GothamSemibold
+button2.Font = Enum.Font.GothamMedium
 button2.TextColor3 = Color3.new(1, 1, 1)
 button2.TextSize = 14
 
@@ -781,7 +784,7 @@ inputButton.BorderSizePixel = 0
 inputButton.Position = UDim2.new(1, -85, 0, 2)
 inputButton.Size = UDim2.new(0, 80, 1, -4)
 inputButton.ZIndex = 2
-inputButton.Font = Enum.Font.GothamSemibold
+inputButton.Font = Enum.Font.GothamMedium
 inputButton.Text = "RShift"
 inputButton.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
 inputButton.TextSize = 12
@@ -878,6 +881,7 @@ local function hasprop(object, prop)
 	if a then
 		return b
 	end
+	return false
 end
 
 local function gNameLen(obj)
