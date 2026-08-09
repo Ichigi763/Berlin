@@ -1,5 +1,5 @@
 -- ============================================================
--- BERLIN V0.1.27 | BEE SWARM SIMULATOR
+-- BERLIN V0.1.28 | BEE SWARM SIMULATOR
 -- MAIN SINGLE FILE LOADER - EXACT ATLAS V1.0 MATCH
 -- ============================================================
 
@@ -2149,7 +2149,7 @@ function library:AddWindow(title, options)
 							target_col = self.TabFrame or new_tab
 						end
 
-						local baseZ = (windows * 10) + 10
+						local baseZ = (windows * 10) + 15
 						local new_folder = Instance.new("Frame")
 						new_folder.Name = folder_name .. "Folder"
 						new_folder.Parent = target_col
@@ -2184,17 +2184,17 @@ function library:AddWindow(title, options)
 						f_corner.CornerRadius = UDim.new(0, 5)
 						f_corner.Parent = f_button
 
-						local arrow = Instance.new("TextLabel")
-						arrow.Name = "ArrowLabel"
-						arrow.Size = UDim2.new(0, 30, 1, 0)
-						arrow.Position = UDim2.new(1, -30, 0, 0)
+						-- Original White Chevron Arrow Icon (Matching Top Bar Toggle)
+						local arrow = Instance.new("ImageLabel")
+						arrow.Name = "ArrowIcon"
+						arrow.Size = UDim2.new(0, 14, 0, 14)
+						arrow.Position = UDim2.new(1, -22, 0.5, -7)
 						arrow.BackgroundTransparency = 1
-						arrow.Font = Enum.Font.GothamBold
-						arrow.TextSize = 14
-						arrow.TextColor3 = Color3.fromRGB(220, 220, 220)
+						arrow.Image = "rbxassetid://6031094678" -- White Chevron Triangle Icon
+						arrow.ImageColor3 = Color3.fromRGB(220, 220, 220)
 						arrow.ZIndex = baseZ + 2
 						arrow.Parent = f_button
-						arrow.Text = is_open and "▼" or "◀"
+						arrow.Rotation = is_open and 0 or -90
 
 						local f_objects = Instance.new("Frame")
 						f_objects.Name = "Objects"
@@ -2212,80 +2212,125 @@ function library:AddWindow(title, options)
 							f_layout.Parent = f_objects
 						end
 
-						local function updateFolderSize()
-							if is_open then
-								f_button.BackgroundColor3 = Color3.fromRGB(42, 44, 52) -- Open Dark Slate Header
-								new_folder.BackgroundColor3 = Color3.fromRGB(26, 27, 33) -- Open Outer Container Card
-								new_folder.BackgroundTransparency = 0
-								arrow.Text = "▼"
-								f_objects.Visible = true
-								local h = f_layout.AbsoluteContentSize.Y
-								if h == 0 then
-									local count = 0
-									for _, child in ipairs(f_objects:GetChildren()) do
-										if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-											count = count + 1
-										end
+						local function updateFolderSize(animate)
+							local h = f_layout.AbsoluteContentSize.Y
+							if h == 0 then
+								local count = 0
+								for _, child in ipairs(f_objects:GetChildren()) do
+									if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
+										count = count + 1
 									end
-									h = count * 26
 								end
-								new_folder.Size = UDim2.new(1, 0, 0, h + 42)
-								new_folder.ClipsDescendants = false
-							else
-								f_button.BackgroundColor3 = Color3.fromRGB(36, 37, 44) -- Closed Compact Pill Header Bar
-								new_folder.BackgroundColor3 = Color3.fromRGB(36, 37, 44) -- Match Closed Pill Color
+								h = count * 26
+							end
+
+							if is_open then
+								f_button.BackgroundColor3 = Color3.fromRGB(42, 44, 52)
+								new_folder.BackgroundColor3 = Color3.fromRGB(26, 27, 33)
 								new_folder.BackgroundTransparency = 0
-								arrow.Text = "◀"
-								f_objects.Visible = false
-								new_folder.Size = UDim2.new(1, 0, 0, 32)
+								f_objects.Visible = true
+								if animate then
+									Resize(arrow, {Rotation = 0}, 0.2)
+									Resize(new_folder, {Size = UDim2.new(1, -6, 0, h + 42)}, 0.2)
+								else
+									arrow.Rotation = 0
+									new_folder.Size = UDim2.new(1, -6, 0, h + 42)
+								end
+								task.delay(0.2, function()
+									if is_open then new_folder.ClipsDescendants = false end
+								end)
+							else
+								f_button.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
+								new_folder.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
+								new_folder.BackgroundTransparency = 0
 								new_folder.ClipsDescendants = true
+								if animate then
+									Resize(arrow, {Rotation = -90}, 0.2)
+									local t = Resize(new_folder, {Size = UDim2.new(1, -6, 0, 32)}, 0.2)
+									if t then
+										t.Completed:Connect(function()
+											if not is_open then f_objects.Visible = false end
+										end)
+									end
+								else
+									arrow.Rotation = -90
+									new_folder.Size = UDim2.new(1, -6, 0, 32)
+									f_objects.Visible = false
+								end
 							end
 						end
 
-						f_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateFolderSize)
-						task.defer(updateFolderSize)
+						f_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+							updateFolderSize(false)
+						end)
+						task.defer(function()
+							updateFolderSize(false)
+						end)
 
 						local function toggleFolder()
 							is_open = not is_open
-							updateFolderSize()
+							updateFolderSize(true)
 						end
 
 						f_button.MouseButton1Click:Connect(toggleFolder)
+
+						local function elevateZ(obj)
+							if not obj then return end
+							if hasprop(obj, "ZIndex") then obj.ZIndex = baseZ + 10 end
+							for _, c in ipairs(obj:GetDescendants()) do
+								if hasprop(c, "ZIndex") then c.ZIndex = baseZ + 11 end
+							end
+						end
 
 						local folder_data = {}
 
 						function folder_data:AddSwitch(switch_text, callback)
 							local s_data, s_obj = tab_data:AddSwitch(switch_text, callback)
-							if s_obj then s_obj.Parent = f_objects end
-							updateFolderSize()
+							if s_obj then
+								s_obj.Parent = f_objects
+								elevateZ(s_obj)
+							end
+							updateFolderSize(false)
 							return s_data, s_obj
 						end
 
 						function folder_data:AddDropdown(dd_text, callback, options)
 							local d_data, d_obj = tab_data:AddDropdown(dd_text, callback, options)
-							if d_obj then d_obj.Parent = f_objects end
-							updateFolderSize()
+							if d_obj then
+								d_obj.Parent = f_objects
+								elevateZ(d_obj)
+							end
+							updateFolderSize(false)
 							return d_data, d_obj
 						end
 
 						function folder_data:AddSlider(slider_text, callback, slider_options)
 							local sl_data, sl_obj = tab_data:AddSlider(slider_text, callback, slider_options)
-							if sl_obj then sl_obj.Parent = f_objects end
-							updateFolderSize()
+							if sl_obj then
+								sl_obj.Parent = f_objects
+								elevateZ(sl_obj)
+							end
+							updateFolderSize(false)
 							return sl_data, sl_obj
 						end
 
 						function folder_data:AddButton(button_text, callback)
 							local b_obj = tab_data:AddButton(button_text, callback)
-							if b_obj then b_obj.Parent = f_objects end
-							updateFolderSize()
+							if b_obj then
+								b_obj.Parent = f_objects
+								elevateZ(b_obj)
+							end
+							updateFolderSize(false)
 							return b_obj
 						end
 
 						function folder_data:AddLabel(label_text)
 							local l_obj = tab_data:AddLabel(label_text)
-							if l_obj then l_obj.Parent = f_objects end
-							updateFolderSize()
+							if l_obj then
+								l_obj.Parent = f_objects
+								elevateZ(l_obj)
+							end
+							updateFolderSize(false)
 							return l_obj
 						end
 
@@ -2293,7 +2338,7 @@ function library:AddWindow(title, options)
 							return tab_data:AddFolder(group_name, default_open_g)
 						end
 
-						updateFolderSize()
+						updateFolderSize(false)
 						return folder_data, new_folder
 					end
 
@@ -2324,7 +2369,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.27", {
+local window = library:AddWindow("Berlin v0.1.28", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2333,7 +2378,7 @@ local window = library:AddWindow("Berlin v0.1.27", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.27] Searching for:", query)
+    print("[Berlin v0.1.28] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2420,7 +2465,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.27] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    print("[Berlin v0.1.28] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2453,7 +2498,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.27] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.28] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2461,7 +2506,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.27] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.28] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2470,7 +2515,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.27] Used Buff:", itemName)
+        print("[Berlin v0.1.28] Used Buff:", itemName)
     end
 end
 
@@ -2479,7 +2524,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.27] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.28] Collected Dispenser:", toyName)
     end
 end
 
@@ -2488,7 +2533,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.27] Took Quest from:", npcName)
+        print("[Berlin v0.1.28] Took Quest from:", npcName)
     end
 end
 
@@ -2504,11 +2549,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.27] Stop Everything:", state)
+    print("[Berlin v0.1.28] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.27] Traveling to Hive Converter...")
+    print("[Berlin v0.1.28] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2549,12 +2594,12 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.27] Selected Field:", selectedField)
+    print("[Berlin v0.1.28] Selected Field:", selectedField)
 end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.27] Autofarm:", state)
+    print("[Berlin v0.1.28] Autofarm:", state)
 end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
@@ -2621,7 +2666,7 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.27] Fly Speed set to:", val)
+    print("[Berlin v0.1.28] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("WalkSpeed", function(val)
@@ -2699,7 +2744,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and pollen.Value >= capacity.Value and capacity.Value > 0 then
-                    print("[Berlin v0.1.27] Pollen Full! Traveling to Hive...")
+                    print("[Berlin v0.1.28] Pollen Full! Traveling to Hive...")
                     travelToHiveConverter()
                     task.wait(4)
                 end
