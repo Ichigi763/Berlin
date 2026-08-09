@@ -1099,13 +1099,17 @@ function library:AddWindow(title, options)
 			function window_data:AddSearchBox(callback)
 				tab_selection.Visible = true
 
+				tab_buttons.Position = UDim2.new(0, 0, 0, 36)
+				tab_buttons.Size = UDim2.new(1, 0, 1, -36)
+
 				local searchFrame = Instance.new("Frame")
 				searchFrame.Name = "SearchFrame"
-				searchFrame.Size = UDim2.new(1, 0, 0, 28)
+				searchFrame.Size = UDim2.new(1, -8, 0, 26)
+				searchFrame.Position = UDim2.new(0, 4, 0, 4)
 				searchFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 				searchFrame.BorderSizePixel = 0
-				searchFrame.ZIndex = 5
-				searchFrame.Parent = tab_buttons
+				searchFrame.ZIndex = 6
+				searchFrame.Parent = tab_selection
 
 				local searchCorner = Instance.new("UICorner")
 				searchCorner.CornerRadius = UDim.new(0, 4)
@@ -1118,7 +1122,7 @@ function library:AddWindow(title, options)
 				searchIcon.BackgroundTransparency = 1
 				searchIcon.Image = "rbxassetid://10709782230"
 				searchIcon.ImageColor3 = Color3.fromRGB(180, 180, 200)
-				searchIcon.ZIndex = 6
+				searchIcon.ZIndex = 7
 				searchIcon.Parent = searchFrame
 
 				local searchBox = Instance.new("TextBox")
@@ -1133,17 +1137,17 @@ function library:AddWindow(title, options)
 				searchBox.TextSize = 12
 				searchBox.Font = Enum.Font.GothamMedium
 				searchBox.TextXAlignment = Enum.TextXAlignment.Left
-				searchBox.ZIndex = 6
+				searchBox.ZIndex = 7
 				searchBox.Parent = searchFrame
 
 				local searchLine = Instance.new("Frame")
 				searchLine.Name = "SearchLine"
 				searchLine.Size = UDim2.new(1, -8, 0, 1)
-				searchLine.Position = UDim2.new(0, 4, 1, 3)
+				searchLine.Position = UDim2.new(0, 4, 0, 33)
 				searchLine.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
 				searchLine.BorderSizePixel = 0
-				searchLine.ZIndex = 6
-				searchLine.Parent = searchFrame
+				searchLine.ZIndex = 7
+				searchLine.Parent = tab_selection
 
 				searchBox:GetPropertyChangedSignal("Text"):Connect(function()
 					if callback then callback(searchBox.Text) end
