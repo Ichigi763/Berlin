@@ -1,5 +1,5 @@
 -- ============================================================
--- BERLIN V0.1.29 | BEE SWARM SIMULATOR
+-- BERLIN V0.1.30 | BEE SWARM SIMULATOR
 -- MAIN SINGLE FILE LOADER - EXACT ATLAS V1.0 MATCH
 -- ============================================================
 
@@ -1076,6 +1076,7 @@ function library:AddWindow(title, options)
 					Resize(open_close, {Rotation = 180}, options.tween_time)
 					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 26)}, options.tween_time)
 					open_close.Parent:FindFirstChild("Base").Transparency = 1
+					if tab_selection then tab_selection.Visible = false end
 
 				else
 					-- Open
@@ -1089,6 +1090,7 @@ function library:AddWindow(title, options)
 					Resize(open_close, {Rotation = 90}, options.tween_time)
 					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, oldy)}, options.tween_time)
 					open_close.Parent:FindFirstChild("Base").Transparency = 0
+					if tab_selection then tab_selection.Visible = true end
 
 				end
 
@@ -1119,6 +1121,7 @@ function library:AddWindow(title, options)
 				searchFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 				searchFrame.BorderSizePixel = 0
 				searchFrame.ZIndex = 6
+				searchFrame.ClipsDescendants = true
 				searchFrame.Parent = tab_selection
 
 				local searchCorner = Instance.new("UICorner")
@@ -1126,12 +1129,12 @@ function library:AddWindow(title, options)
 				searchCorner.Parent = searchFrame
 
 				local searchIcon = Instance.new("ImageLabel")
-				searchIcon.Name = "Icon"
+				searchIcon.Name = "SearchIcon"
 				searchIcon.Size = UDim2.new(0, 14, 0, 14)
 				searchIcon.Position = UDim2.new(0, 6, 0.5, -7)
 				searchIcon.BackgroundTransparency = 1
-				searchIcon.Image = "rbxassetid://6031154871"
-				searchIcon.ImageColor3 = Color3.fromRGB(180, 180, 200)
+				searchIcon.Image = "rbxassetid://6031154871" -- Search magnifying glass
+				searchIcon.ImageColor3 = Color3.fromRGB(160, 160, 175)
 				searchIcon.ZIndex = 7
 				searchIcon.Parent = searchFrame
 
@@ -1140,27 +1143,20 @@ function library:AddWindow(title, options)
 				searchBox.Size = UDim2.new(1, -26, 1, 0)
 				searchBox.Position = UDim2.new(0, 24, 0, 0)
 				searchBox.BackgroundTransparency = 1
-				searchBox.PlaceholderText = "Search..."
-				searchBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 160)
-				searchBox.Text = ""
-				searchBox.TextColor3 = Color3.fromRGB(240, 240, 255)
-				searchBox.TextSize = 12
 				searchBox.Font = Enum.Font.GothamMedium
+				searchBox.TextSize = 12
+				searchBox.TextColor3 = Color3.fromRGB(240, 240, 240)
+				searchBox.PlaceholderText = "Search..."
+				searchBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 155)
 				searchBox.TextXAlignment = Enum.TextXAlignment.Left
-				searchBox.ZIndex = 7
+				searchBox.Text = ""
+				searchBox.ZIndex = 8
 				searchBox.Parent = searchFrame
 
-				local searchLine = Instance.new("Frame")
-				searchLine.Name = "SearchLine"
-				searchLine.Size = UDim2.new(1, -8, 0, 1)
-				searchLine.Position = UDim2.new(0, 4, 0, 33)
-				searchLine.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-				searchLine.BorderSizePixel = 0
-				searchLine.ZIndex = 7
-				searchLine.Parent = tab_selection
-
 				searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-					if callback then callback(searchBox.Text) end
+					if typeof(callback) == "function" then
+						callback(searchBox.Text)
+					end
 				end)
 
 				return searchBox
@@ -2369,7 +2365,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window
-local window = library:AddWindow("Berlin v0.1.29", {
+local window = library:AddWindow("Berlin v0.1.30", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2378,7 +2374,7 @@ local window = library:AddWindow("Berlin v0.1.29", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.29] Searching for:", query)
+    print("[Berlin v0.1.30] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2465,7 +2461,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.29] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    print("[Berlin v0.1.30] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2498,7 +2494,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.29] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.30] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2506,7 +2502,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.29] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.30] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2515,7 +2511,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.29] Used Buff:", itemName)
+        print("[Berlin v0.1.30] Used Buff:", itemName)
     end
 end
 
@@ -2524,7 +2520,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.29] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.30] Collected Dispenser:", toyName)
     end
 end
 
@@ -2533,7 +2529,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.29] Took Quest from:", npcName)
+        print("[Berlin v0.1.30] Took Quest from:", npcName)
     end
 end
 
@@ -2549,11 +2545,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.29] Stop Everything:", state)
+    print("[Berlin v0.1.30] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.29] Traveling to Hive Converter...")
+    print("[Berlin v0.1.30] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2594,12 +2590,12 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.29] Selected Field:", selectedField)
+    print("[Berlin v0.1.30] Selected Field:", selectedField)
 end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.29] Autofarm:", state)
+    print("[Berlin v0.1.30] Autofarm:", state)
 end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
@@ -2666,7 +2662,7 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.29] Fly Speed set to:", val)
+    print("[Berlin v0.1.30] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("WalkSpeed", function(val)
@@ -2682,20 +2678,19 @@ configFolder:AddSlider("JumpPower", function(val)
 end, {min = 50, max = 300, readonly = false})
 
 -- ============================================================
--- AUTOFARM ENGINE LOOP (HUMANOID WALKING + TOKEN COLLECT + AUTO CONVERT)
+-- HIGH-FREQUENCY CONTINUOUS NON-STOP TOKEN CHAIN FARMING ENGINE
 -- ============================================================
 task.spawn(function()
     local angle = 0
-    while task.wait(0.2) do
+    while task.wait(0.05) do
         if not stopEverything and autoFarmActive then
             local char = LocalPlayer.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
             local hum = char and char:FindFirstChildOfClass("Humanoid")
             local tool = char and char:FindFirstChildOfClass("Tool")
 
-            -- Auto Dig / Scoop Tool
-            if autoDigActive or autoFarmActive then
-                if tool then tool:Activate() end
+            if tool and (autoDigActive or autoFarmActive) then
+                tool:Activate()
             end
 
             if hrp and hum then
@@ -2718,7 +2713,7 @@ task.spawn(function()
                 if collectibles then
                     local minDistance = 9999
                     for _, token in ipairs(collectibles:GetChildren()) do
-                        if token:IsA("BasePart") and (token.Position - center).Magnitude < 45 then
+                        if token:IsA("BasePart") and (token.Position - center).Magnitude < 48 then
                             local d = (hrp.Position - token.Position).Magnitude
                             if d < minDistance then
                                 minDistance = d
@@ -2729,11 +2724,11 @@ task.spawn(function()
                 end
 
                 if targetToken then
-                    -- WALK / RUN smoothly to token using Humanoid:MoveTo!
+                    -- WALK / RUN continuously without stopping to nearest token
                     hum:MoveTo(targetToken.Position)
                 else
                     -- Walk around inside field radius naturally
-                    angle = angle + 0.5
+                    angle = angle + 0.1
                     local offsetX = math.cos(angle) * 20
                     local offsetZ = math.sin(angle) * 20
                     local patrolPoint = center + Vector3.new(offsetX, 0, offsetZ)
@@ -2743,10 +2738,10 @@ task.spawn(function()
                 -- Auto Convert check if Pollen Container is Full
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
-                if pollen and capacity and pollen.Value >= capacity.Value and capacity.Value > 0 then
-                    print("[Berlin v0.1.29] Pollen Full! Traveling to Hive...")
+                if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
+                    print("[Berlin v0.1.30] Pollen Full! Traveling smoothly to Hive...")
                     travelToHiveConverter()
-                    task.wait(4)
+                    task.wait(3)
                 end
             end
         end

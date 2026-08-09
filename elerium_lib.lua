@@ -1070,6 +1070,7 @@ function library:AddWindow(title, options)
 					Resize(open_close, {Rotation = 180}, options.tween_time)
 					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 26)}, options.tween_time)
 					open_close.Parent:FindFirstChild("Base").Transparency = 1
+					if tab_selection then tab_selection.Visible = false end
 
 				else
 					-- Open
@@ -1083,6 +1084,7 @@ function library:AddWindow(title, options)
 					Resize(open_close, {Rotation = 90}, options.tween_time)
 					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, oldy)}, options.tween_time)
 					open_close.Parent:FindFirstChild("Base").Transparency = 0
+					if tab_selection then tab_selection.Visible = true end
 
 				end
 
@@ -1113,6 +1115,7 @@ function library:AddWindow(title, options)
 				searchFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 				searchFrame.BorderSizePixel = 0
 				searchFrame.ZIndex = 6
+				searchFrame.ClipsDescendants = true
 				searchFrame.Parent = tab_selection
 
 				local searchCorner = Instance.new("UICorner")
@@ -1120,12 +1123,12 @@ function library:AddWindow(title, options)
 				searchCorner.Parent = searchFrame
 
 				local searchIcon = Instance.new("ImageLabel")
-				searchIcon.Name = "Icon"
+				searchIcon.Name = "SearchIcon"
 				searchIcon.Size = UDim2.new(0, 14, 0, 14)
 				searchIcon.Position = UDim2.new(0, 6, 0.5, -7)
 				searchIcon.BackgroundTransparency = 1
-				searchIcon.Image = "rbxassetid://6031154871"
-				searchIcon.ImageColor3 = Color3.fromRGB(180, 180, 200)
+				searchIcon.Image = "rbxassetid://6031154871" -- Search magnifying glass
+				searchIcon.ImageColor3 = Color3.fromRGB(160, 160, 175)
 				searchIcon.ZIndex = 7
 				searchIcon.Parent = searchFrame
 
@@ -1134,27 +1137,20 @@ function library:AddWindow(title, options)
 				searchBox.Size = UDim2.new(1, -26, 1, 0)
 				searchBox.Position = UDim2.new(0, 24, 0, 0)
 				searchBox.BackgroundTransparency = 1
-				searchBox.PlaceholderText = "Search..."
-				searchBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 160)
-				searchBox.Text = ""
-				searchBox.TextColor3 = Color3.fromRGB(240, 240, 255)
-				searchBox.TextSize = 12
 				searchBox.Font = Enum.Font.GothamMedium
+				searchBox.TextSize = 12
+				searchBox.TextColor3 = Color3.fromRGB(240, 240, 240)
+				searchBox.PlaceholderText = "Search..."
+				searchBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 155)
 				searchBox.TextXAlignment = Enum.TextXAlignment.Left
-				searchBox.ZIndex = 7
+				searchBox.Text = ""
+				searchBox.ZIndex = 8
 				searchBox.Parent = searchFrame
 
-				local searchLine = Instance.new("Frame")
-				searchLine.Name = "SearchLine"
-				searchLine.Size = UDim2.new(1, -8, 0, 1)
-				searchLine.Position = UDim2.new(0, 4, 0, 33)
-				searchLine.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-				searchLine.BorderSizePixel = 0
-				searchLine.ZIndex = 7
-				searchLine.Parent = tab_selection
-
 				searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-					if callback then callback(searchBox.Text) end
+					if typeof(callback) == "function" then
+						callback(searchBox.Text)
+					end
 				end)
 
 				return searchBox
