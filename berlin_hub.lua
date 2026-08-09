@@ -1,11 +1,11 @@
 -- ============================================================
 -- BERLIN V0.1 | BEE SWARM SIMULATOR
--- OFFICIAL MODIFIED ELERIUM V2 LIBRARY (ATLAS V1.0 REPLICA)
+-- OFFICIAL ELERIUM V2 UI LIBRARY (RED & GREY THEME WITH RIGHT MINIMIZE)
 -- ============================================================
 
 local library = (function()
 local ui_options = {
-	main_color = Color3.fromRGB(41, 74, 122),
+	main_color = Color3.fromRGB(180, 30, 40),
 	min_size = Vector2.new(400, 300),
 	toggle_key = Enum.KeyCode.RightShift,
 	can_resize = true,
@@ -136,7 +136,7 @@ resizer.Size = UDim2.new(0, 20, 0, 20)
 
 bar.Name = "Bar"
 bar.Parent = window
-bar.BackgroundColor3 = Color3.fromRGB(43, 82, 146)
+bar.BackgroundColor3 = Color3.fromRGB(180, 30, 40)
 bar.BorderSizePixel = 0
 bar.Position = UDim2.new(0, 0, 0, 5)
 bar.Size = UDim2.new(1, 0, 0, 15)
@@ -145,7 +145,7 @@ toggle.Name = "Toggle"
 toggle.Parent = bar
 toggle.BackgroundColor3 = Color3.new(1, 1, 1)
 toggle.BackgroundTransparency = 1
-toggle.Position = UDim2.new(0, 5, 0, -2)
+toggle.Position = UDim2.new(1, -25, 0, -2)
 toggle.Rotation = 90
 toggle.Size = UDim2.new(0, 20, 0, 20)
 toggle.ZIndex = 2
@@ -153,12 +153,12 @@ toggle.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&as
 
 base.Name = "Base"
 base.Parent = bar
-base.BackgroundColor3 = Color3.fromRGB(43, 82, 146)
+base.BackgroundColor3 = Color3.fromRGB(180, 30, 40)
 base.BorderSizePixel = 0
 base.Position = UDim2.new(0, 0, 0.800000012, 0)
 base.Size = UDim2.new(1, 0, 0, 10)
 base.Image = "rbxassetid://2851926732"
-base.ImageColor3 = Color3.fromRGB(43, 82, 146)
+base.ImageColor3 = Color3.fromRGB(180, 30, 40)
 base.ScaleType = Enum.ScaleType.Slice
 base.SliceCenter = Rect.new(12, 12, 12, 12)
 
@@ -169,7 +169,7 @@ top.BackgroundTransparency = 1
 top.Position = UDim2.new(0, 0, 0, -5)
 top.Size = UDim2.new(1, 0, 0, 10)
 top.Image = "rbxassetid://2851926732"
-top.ImageColor3 = Color3.fromRGB(43, 82, 146)
+top.ImageColor3 = Color3.fromRGB(180, 30, 40)
 top.ScaleType = Enum.ScaleType.Slice
 top.SliceCenter = Rect.new(12, 12, 12, 12)
 
@@ -184,7 +184,7 @@ titleLabel.Name = "Title"
 titleLabel.Parent = window
 titleLabel.BackgroundColor3 = Color3.new(1, 1, 1)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Position = UDim2.new(0, 30, 0, 3)
+titleLabel.Position = UDim2.new(0, 15, 0, 3)
 titleLabel.Size = UDim2.new(0, 200, 0, 20)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Text = "Gamer Time"
@@ -393,7 +393,7 @@ textButtonRoundify4px.SliceCenter = Rect.new(4, 4, 4, 4)
 
 tabButton.Name = "TabButton"
 tabButton.Parent = prefabs
-tabButton.BackgroundColor3 = Color3.fromRGB(43, 82, 146)
+tabButton.BackgroundColor3 = Color3.fromRGB(180, 30, 40)
 tabButton.BackgroundTransparency = 1
 tabButton.BorderSizePixel = 0
 tabButton.Position = UDim2.new(0.185185179, 0, 0, 0)
@@ -427,7 +427,7 @@ folder.SliceCenter = Rect.new(4, 4, 4, 4)
 
 button.Name = "Button"
 button.Parent = folder
-button.BackgroundColor3 = Color3.fromRGB(43, 82, 146)
+button.BackgroundColor3 = Color3.fromRGB(180, 30, 40)
 button.BackgroundTransparency = 1
 button.BorderSizePixel = 0
 button.Size = UDim2.new(1, 0, 0, 20)
@@ -444,7 +444,7 @@ textButtonRoundify4px_3.BackgroundColor3 = Color3.new(1, 1, 1)
 textButtonRoundify4px_3.BackgroundTransparency = 1
 textButtonRoundify4px_3.Size = UDim2.new(1, 0, 1, 0)
 textButtonRoundify4px_3.Image = "rbxassetid://2851929490"
-textButtonRoundify4px_3.ImageColor3 = Color3.fromRGB(43, 82, 146)
+textButtonRoundify4px_3.ImageColor3 = Color3.fromRGB(180, 30, 40)
 textButtonRoundify4px_3.ScaleType = Enum.ScaleType.Slice
 textButtonRoundify4px_3.SliceCenter = Rect.new(4, 4, 4, 4)
 
@@ -708,7 +708,7 @@ textButtonRoundify4px_4.BackgroundColor3 = Color3.new(1, 1, 1)
 textButtonRoundify4px_4.BackgroundTransparency = 1
 textButtonRoundify4px_4.Size = UDim2.new(1, 0, 1, 0)
 textButtonRoundify4px_4.Image = "rbxassetid://2851929490"
-textButtonRoundify4px_4.ImageColor3 = Color3.fromRGB(43, 82, 146)
+textButtonRoundify4px_4.ImageColor3 = Color3.fromRGB(180, 30, 40)
 textButtonRoundify4px_4.ImageTransparency = 0.5
 textButtonRoundify4px_4.ScaleType = Enum.ScaleType.Slice
 textButtonRoundify4px_4.SliceCenter = Rect.new(4, 4, 4, 4)
@@ -727,7 +727,7 @@ title3Label.TextXAlignment = Enum.TextXAlignment.Left
 
 button2.Name = "Button"
 button2.Parent = prefabs
-button2.BackgroundColor3 = Color3.fromRGB(43, 82, 146)
+button2.BackgroundColor3 = Color3.fromRGB(180, 30, 40)
 button2.BackgroundTransparency = 1
 button2.BorderSizePixel = 0
 button2.Size = UDim2.new(0, 91, 0, 20)
@@ -742,7 +742,7 @@ textButtonRoundify4px_5.BackgroundColor3 = Color3.new(1, 1, 1)
 textButtonRoundify4px_5.BackgroundTransparency = 1
 textButtonRoundify4px_5.Size = UDim2.new(1, 0, 1, 0)
 textButtonRoundify4px_5.Image = "rbxassetid://2851929490"
-textButtonRoundify4px_5.ImageColor3 = Color3.fromRGB(43, 82, 146)
+textButtonRoundify4px_5.ImageColor3 = Color3.fromRGB(180, 30, 40)
 textButtonRoundify4px_5.ScaleType = Enum.ScaleType.Slice
 textButtonRoundify4px_5.SliceCenter = Rect.new(4, 4, 4, 4)
 
@@ -2056,16 +2056,15 @@ end
     return library
 end)()
 
--- Create Window using Modified Elerium v2 Engine
+-- Create Window using Red & Grey Elerium v2 Engine
 local window = library:AddWindow("Berlin v0.1", {
-    main_color = Color3.fromRGB(43, 82, 146), -- Atlas Blue
-    min_size = Vector2.new(780, 400),         -- Perfect height for 10 tabs
+    main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red
+    min_size = Vector2.new(780, 345),         -- Auto-fitted height for tabs
     toggle_key = Enum.KeyCode.RightShift,
     can_resize = true,
 })
 
 -- Add Vertical Tabs (Left Sidebar)
-local searchTab   = window:AddTab("Search")
 local homeTab     = window:AddTab("Home")
 local farmTab     = window:AddTab("Farming")
 local combatTab   = window:AddTab("Combat")
@@ -2077,6 +2076,38 @@ local configTab   = window:AddTab("Config")
 local debugTab    = window:AddTab("Debug")
 
 farmTab:Show()
+
+-- Add Search Box on top of Left Sidebar
+task.spawn(function()
+    task.wait(0.2)
+    pcall(function()
+        local gui = game:GetService("CoreGui"):FindFirstChild("imgui") or game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("imgui")
+        if gui then
+            local win = gui:FindFirstChild("Window", true)
+            local tabSel = win and win:FindFirstChild("TabSelection", true)
+            if tabSel then
+                -- Add Search TextBox at top of sidebar
+                local searchBox = Instance.new("TextBox")
+                searchBox.Name = "SidebarSearchInput"
+                searchBox.Size = UDim2.new(1, 0, 0, 26)
+                searchBox.Position = UDim2.new(0, 0, 0, -28)
+                searchBox.BackgroundColor3 = Color3.fromRGB(36, 36, 44)
+                searchBox.BorderSizePixel = 0
+                searchBox.PlaceholderText = "🔍 Search..."
+                searchBox.PlaceholderColor3 = Color3.fromRGB(160, 160, 180)
+                searchBox.Text = ""
+                searchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                searchBox.Font = Enum.Font.GothamMedium
+                searchBox.TextSize = 12
+                searchBox.Parent = tabSel
+
+                local searchCorner = Instance.new("UICorner")
+                searchCorner.CornerRadius = UDim.new(0, 4)
+                searchCorner.Parent = searchBox
+            end
+        end
+    end)
+end)
 
 -- ============================================================
 -- GAME SERVICES & AUTO-FARM LOGIC
@@ -2177,7 +2208,7 @@ task.spawn(function()
 end)
 
 -- ============================================================
--- POPULATE FARMING TAB (ELERIUM CONTROLS)
+-- POPULATE FARMING TAB
 -- ============================================================
 farmTab:AddLabel("--- Farming Settings ---")
 
@@ -2207,7 +2238,7 @@ end)
 
 -- HOME TAB
 homeTab:AddLabel("--- Berlin v0.1 Hub ---")
-homeTab:AddLabel("UI Library: Official Modified Elerium v2")
+homeTab:AddLabel("Theme: Crimson Red & Dark Grey")
 homeTab:AddLabel("Press RightShift to Toggle UI")
 
 homeTab:AddButton("Fly to My Hive", function()
@@ -2235,7 +2266,7 @@ homeTab:AddButton("Fly to My Hive", function()
 end)
 
 -- CONFIG TAB
-configTab:AddLabel("--- Movement Physics ---")
+configTab:AddLabel("--- Movement Controls ---")
 
 configTab:AddSlider("WalkSpeed", function(val)
     local char = LocalPlayer.Character
@@ -2250,5 +2281,5 @@ configTab:AddSlider("JumpPower", function(val)
 end, {min = 50, max = 250, readonly = false})
 
 print("==================================================")
-print("✅ Berlin v0.1 (Modified Elerium v2 Left-Sidebar Engine) Ready!")
+print("✅ Berlin v0.1 (Red & Grey Theme + Right Minimize) Ready!")
 print("==================================================")
