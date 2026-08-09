@@ -7,7 +7,7 @@ local eleriumUrl = "https://raw.githubusercontent.com/Ichigi763/Berlin/main/eler
 local library = loadstring(game:HttpGet(eleriumUrl, false))()
 
 -- Create Red & Grey Elerium v2 Window (Exact Width fitted to sidebar + content)
-local window = library:AddWindow("Berlin v0.1.6", {
+local window = library:AddWindow("Berlin v0.1.7", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -16,7 +16,7 @@ local window = library:AddWindow("Berlin v0.1.6", {
 
 -- Add Interactive Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.6] Searching for:", query)
+    print("[Berlin v0.1.7] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium

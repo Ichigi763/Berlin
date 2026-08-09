@@ -1185,19 +1185,37 @@ function library:AddWindow(title, options)
 						["settings"]  = "rbxassetid://7734053495",
 						["bug"]       = "rbxassetid://10709781709",
 					}
-					local real_asset = LucideMap[tostring(icon_id):lower()] or icon_id
+					local raw_asset = LucideMap[tostring(icon_id):lower()] or icon_id
 
 					local icon = Instance.new("ImageLabel")
 					icon.Name = "Icon"
 					icon.Size = UDim2.new(0, 16, 0, 16)
 					icon.Position = UDim2.new(0, 8, 0.5, -8)
 					icon.BackgroundTransparency = 1
-					icon.Image = real_asset
 					icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 					icon.ZIndex = new_button:GetChildren()[1].ZIndex + 10
 					icon.Parent = new_button
 					new_button.Text = "         " .. tab_name
 					new_button.TextXAlignment = Enum.TextXAlignment.Left
+
+					task.spawn(function()
+						local num = tostring(raw_asset):match("%d+")
+						if num then
+							local success, result = pcall(function()
+								local objs = game:GetObjects("rbxassetid://" .. num)
+								if objs and objs[1] and objs[1]:IsA("Decal") then
+									return objs[1].Texture
+								end
+							end)
+							if success and result and result ~= "" then
+								icon.Image = result
+							else
+								icon.Image = "rbxassetid://" .. num
+							end
+						else
+							icon.Image = raw_asset
+						end
+					end)
 				end
 
 				if tab_name == "Search" then
