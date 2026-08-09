@@ -2111,43 +2111,38 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 					local group_data = {}
 
 					function group_data:AddSwitch(switch_name, callback)
-						local ret = {tab_data:AddSwitch(switch_name, callback)}
-						local obj = ret[#ret]
-						if obj then obj.Parent = container end
+						local switch_data, switch_obj = tab_data:AddSwitch(switch_name, callback)
+						if switch_obj then switch_obj.Parent = container end
 						updateCardSize()
-						return unpack(ret)
+						return switch_data, switch_obj
 					end
 
 					function group_data:AddDropdown(dd_name, callback, options)
-						local ret = {tab_data:AddDropdown(dd_name, callback, options)}
-						local obj = ret[#ret]
-						if obj then obj.Parent = container end
+						local dropdown_data, dropdown_obj = tab_data:AddDropdown(dd_name, callback, options)
+						if dropdown_obj then dropdown_obj.Parent = container end
 						updateCardSize()
-						return unpack(ret)
+						return dropdown_data, dropdown_obj
 					end
 
 					function group_data:AddSlider(slider_name, callback, slider_options)
-						local ret = {tab_data:AddSlider(slider_name, callback, slider_options)}
-						local obj = ret[#ret]
-						if obj then obj.Parent = container end
+						local slider_data, slider_obj = tab_data:AddSlider(slider_name, callback, slider_options)
+						if slider_obj then slider_obj.Parent = container end
 						updateCardSize()
-						return unpack(ret)
+						return slider_data, slider_obj
 					end
 
 					function group_data:AddButton(btn_name, callback)
-						local ret = {tab_data:AddButton(btn_name, callback)}
-						local obj = ret[#ret]
-						if obj then obj.Parent = container end
+						local btn_obj = tab_data:AddButton(btn_name, callback)
+						if btn_obj then btn_obj.Parent = container end
 						updateCardSize()
-						return unpack(ret)
+						return btn_obj
 					end
 
 					function group_data:AddLabel(label_text)
-						local ret = {tab_data:AddLabel(label_text)}
-						local obj = ret[#ret]
-						if obj then obj.Parent = container end
+						local label_obj = tab_data:AddLabel(label_text)
+						if label_obj then label_obj.Parent = container end
 						updateCardSize()
-						return unpack(ret)
+						return label_obj
 					end
 
 					updateCardSize()
