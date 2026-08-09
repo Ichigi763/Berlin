@@ -1070,7 +1070,8 @@ function library:AddWindow(title, options)
 					Resize(open_close, {Rotation = 180}, options.tween_time)
 					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, 26)}, options.tween_time)
 					open_close.Parent:FindFirstChild("Base").Transparency = 1
-					if tab_selection then tab_selection.Visible = false end
+					local ts = Window:FindFirstChild("TabSelection")
+					if ts then ts.Visible = false end
 
 				else
 					-- Open
@@ -1084,7 +1085,8 @@ function library:AddWindow(title, options)
 					Resize(open_close, {Rotation = 90}, options.tween_time)
 					Resize(Window, {Size = UDim2.new(0, Window.AbsoluteSize.X, 0, oldy)}, options.tween_time)
 					open_close.Parent:FindFirstChild("Base").Transparency = 0
-					if tab_selection then tab_selection.Visible = true end
+					local ts = Window:FindFirstChild("TabSelection")
+					if ts then ts.Visible = true end
 
 				end
 
