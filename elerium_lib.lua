@@ -2217,14 +2217,41 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 						new_folder.ClipsDescendants = true
 
 						local f_button = new_folder:FindFirstChild("Button")
+						if not f_button then
+							f_button = Instance.new("TextButton")
+							f_button.Name = "Button"
+							f_button.Parent = new_folder
+						end
 						f_button.Text = "  " .. folder_name
 						f_button.Size = UDim2.new(1, 0, 0, 32)
+						f_button.Font = Enum.Font.GothamBold
+						f_button.TextSize = 13
+						f_button.TextColor3 = Color3.fromRGB(240, 240, 240)
+						f_button.TextXAlignment = Enum.TextXAlignment.Left
+						f_button.AutoButtonColor = true
+						f_button.ZIndex = 5
 
-						local f_toggle = f_button:FindFirstChild("Toggle")
-						f_toggle.Position = UDim2.new(1, -25, 0, 6)
-						f_toggle.Rotation = is_open and 90 or 180
+						local arrow = f_button:FindFirstChild("ArrowLabel")
+						if not arrow then
+							arrow = Instance.new("TextLabel")
+							arrow.Name = "ArrowLabel"
+							arrow.Size = UDim2.new(0, 30, 1, 0)
+							arrow.Position = UDim2.new(1, -30, 0, 0)
+							arrow.BackgroundTransparency = 1
+							arrow.Font = Enum.Font.GothamBold
+							arrow.TextSize = 14
+							arrow.TextColor3 = Color3.fromRGB(220, 220, 220)
+							arrow.ZIndex = 6
+							arrow.Parent = f_button
+						end
+						arrow.Text = is_open and "▼" or "◀"
 
 						local f_objects = new_folder:FindFirstChild("Objects")
+						if not f_objects then
+							f_objects = Instance.new("Frame")
+							f_objects.Name = "Objects"
+							f_objects.Parent = new_folder
+						end
 						f_objects.Position = UDim2.new(0, 8, 0, 34)
 						f_objects.Size = UDim2.new(1, -16, 0, 0)
 						f_objects.Visible = is_open
@@ -2238,7 +2265,7 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 
 						local function updateFolderSize()
 							if is_open then
-								new_folder.Size = UDim2.new(1, 0, 0, f_layout.AbsoluteContentSize.Y + 42)
+								new_folder.Size = UDim2.new(1, 0, 0, f_layout.AbsoluteContentSize.Y + 40)
 							else
 								new_folder.Size = UDim2.new(1, 0, 0, 32)
 							end
@@ -2246,12 +2273,14 @@ local object = prefabs:FindFirstChild("DropdownButton"):Clone()
 
 						f_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateFolderSize)
 
-						f_button.MouseButton1Click:Connect(function()
+						local function toggleFolder()
 							is_open = not is_open
-							f_toggle.Rotation = is_open and 90 or 180
+							arrow.Text = is_open and "▼" or "◀"
 							f_objects.Visible = is_open
 							updateFolderSize()
-						end)
+						end
+
+						f_button.MouseButton1Click:Connect(toggleFolder)
 
 						local folder_data = {}
 
