@@ -1368,27 +1368,30 @@ function library:AddWindow(title, options)
 
 						switch:FindFirstChild("Title").ZIndex = switch:FindFirstChild("Title").ZIndex + (windows * 10)
 						switch.ZIndex = switch.ZIndex + (windows * 10)
-						switch:GetChildren()[1].ZIndex = switch:GetChildren()[1].ZIndex + (windows * 10)
-
-						spawn(function()
-							while true do
-								if switch and switch:GetChildren()[1] then
-									switch:GetChildren()[1].ImageColor3 = options.main_color
-								end
-								RS.Heartbeat:Wait()
-							end
-						end)
+						local bgImg = switch:GetChildren()[1]
+						if bgImg then
+							bgImg.ZIndex = bgImg.ZIndex + (windows * 10)
+							bgImg.ImageColor3 = Color3.fromRGB(32, 48, 75) -- Dark Navy Blue Square
+						end
 
 						local toggled = false
+						local function updateSwitchColor()
+							if bgImg then
+								bgImg.ImageColor3 = toggled and Color3.fromRGB(50, 95, 175) or Color3.fromRGB(32, 48, 75)
+							end
+						end
+
 						switch.MouseButton1Click:Connect(function()
 							toggled = not toggled
 							switch.Text = toggled and utf8.char(10003) or ""
+							updateSwitchColor()
 							pcall(callback, toggled)
 						end)
 
 						function switch_data:Set(bool)
 							toggled = (typeof(bool) == "boolean") and bool or false
 							switch.Text = toggled and utf8.char(10003) or ""
+							updateSwitchColor()
 							pcall(callback,toggled)
 						end
 
@@ -2215,8 +2218,14 @@ function library:AddWindow(title, options)
 						new_folder.Name = folder_name .. "Folder"
 						new_folder.Parent = (side == "right" or side == 2 or side == "col2") and right_col or left_col
 						new_folder.Size = UDim2.new(1, 0, 0, 32)
-						new_folder.BackgroundTransparency = 1
+						new_folder.BackgroundColor3 = Color3.fromRGB(26, 27, 33) -- Dark Card Container Box
+						new_folder.BackgroundTransparency = 0
+						new_folder.BorderSizePixel = 0
 						new_folder.ClipsDescendants = true
+
+						local card_corner = Instance.new("UICorner")
+						card_corner.CornerRadius = UDim.new(0, 6)
+						card_corner.Parent = new_folder
 
 						local f_button = Instance.new("TextButton")
 						f_button.Name = "Button"

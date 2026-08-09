@@ -1,8 +1,9 @@
 -- ============================================================
--- ATLAS V1.0 (BERLIN V0.1.17) | STANDALONE UI TEMPLATE
--- EXACT 100% VISUAL MATCH OF ATLAS V1.0 ON ELERIUM V2 ENGINE
+-- BERLIN V0.1.18 | BEE SWARM SIMULATOR
+-- MAIN SINGLE FILE LOADER - EXACT ATLAS V1.0 MATCH
 -- ============================================================
 
+-- EMBEDDED ELERIUM V2 LIBRARY
 local library = (function()
 local ui_options = {
 	main_color = Color3.fromRGB(180, 30, 40),
@@ -1374,27 +1375,30 @@ function library:AddWindow(title, options)
 
 						switch:FindFirstChild("Title").ZIndex = switch:FindFirstChild("Title").ZIndex + (windows * 10)
 						switch.ZIndex = switch.ZIndex + (windows * 10)
-						switch:GetChildren()[1].ZIndex = switch:GetChildren()[1].ZIndex + (windows * 10)
-
-						spawn(function()
-							while true do
-								if switch and switch:GetChildren()[1] then
-									switch:GetChildren()[1].ImageColor3 = options.main_color
-								end
-								RS.Heartbeat:Wait()
-							end
-						end)
+						local bgImg = switch:GetChildren()[1]
+						if bgImg then
+							bgImg.ZIndex = bgImg.ZIndex + (windows * 10)
+							bgImg.ImageColor3 = Color3.fromRGB(32, 48, 75) -- Dark Navy Blue Square
+						end
 
 						local toggled = false
+						local function updateSwitchColor()
+							if bgImg then
+								bgImg.ImageColor3 = toggled and Color3.fromRGB(50, 95, 175) or Color3.fromRGB(32, 48, 75)
+							end
+						end
+
 						switch.MouseButton1Click:Connect(function()
 							toggled = not toggled
 							switch.Text = toggled and utf8.char(10003) or ""
+							updateSwitchColor()
 							pcall(callback, toggled)
 						end)
 
 						function switch_data:Set(bool)
 							toggled = (typeof(bool) == "boolean") and bool or false
 							switch.Text = toggled and utf8.char(10003) or ""
+							updateSwitchColor()
 							pcall(callback,toggled)
 						end
 
@@ -2221,8 +2225,14 @@ function library:AddWindow(title, options)
 						new_folder.Name = folder_name .. "Folder"
 						new_folder.Parent = (side == "right" or side == 2 or side == "col2") and right_col or left_col
 						new_folder.Size = UDim2.new(1, 0, 0, 32)
-						new_folder.BackgroundTransparency = 1
+						new_folder.BackgroundColor3 = Color3.fromRGB(26, 27, 33) -- Dark Card Container Box
+						new_folder.BackgroundTransparency = 0
+						new_folder.BorderSizePixel = 0
 						new_folder.ClipsDescendants = true
+
+						local card_corner = Instance.new("UICorner")
+						card_corner.CornerRadius = UDim.new(0, 6)
+						card_corner.Parent = new_folder
 
 						local f_button = Instance.new("TextButton")
 						f_button.Name = "Button"
@@ -2283,7 +2293,7 @@ function library:AddWindow(title, options)
 									end
 									h = count * 26
 								end
-								new_folder.Size = UDim2.new(1, 0, 0, h + 38)
+								new_folder.Size = UDim2.new(1, 0, 0, h + 42)
 								new_folder.ClipsDescendants = false
 							else
 								new_folder.Size = UDim2.new(1, 0, 0, 32)
@@ -2372,8 +2382,8 @@ return library
 
 end)()
 
--- Create Atlas v1.0 Style Window (Crimson / Navy Dark Theme)
-local window = library:AddWindow("Berlin v0.1.17", {
+-- Create Red & Grey Elerium v2 Window
+local window = library:AddWindow("Berlin v0.1.18", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(780, 440),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2382,10 +2392,10 @@ local window = library:AddWindow("Berlin v0.1.17", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Atlas UI] Searching for:", query)
+    print("[Berlin v0.1.18] Searching for:", query)
 end)
 
--- Sidebar Tabs with Official Lucide Icons
+-- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
 local homeTab     = window:AddTab("Home", "info")
 local farmTab     = window:AddTab("Farming", "house")
 local combatTab   = window:AddTab("Combat", "swords")
@@ -2396,39 +2406,230 @@ local webhookTab  = window:AddTab("Webhook", "link")
 local configTab   = window:AddTab("Config", "settings")
 local debugTab    = window:AddTab("Debug", "bug")
 
-farmTab:Show() -- Show Farming Tab by Default
+homeTab:Show()
 
 -- ============================================================
--- FARMING TAB: 2-COLUMN COLLAPSIBLE SUB-SECTION CARDS
+-- GAME SERVICES & ALL BSS FIELD POSITIONS
 -- ============================================================
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local startTime = os.time()
+local stopEverything = false
+local flySpeed = 75 -- Default Fly Speed
+
+-- Complete List of 22 Bee Swarm Simulator Fields
+local FieldPositions = {
+    ["Sunflower Field"]     = Vector3.new(-208, 4, 184),
+    ["Dandelion Field"]     = Vector3.new(-28, 4, 222),
+    ["Mushroom Field"]      = Vector3.new(-258, 4, 296),
+    ["Blue Flower Field"]   = Vector3.new(114, 4, 102),
+    ["Clover Field"]        = Vector3.new(148, 34, 198),
+    ["Strawberry Field"]    = Vector3.new(-182, 20, -12),
+    ["Spider Field"]        = Vector3.new(-44, 20, -42),
+    ["Bamboo Field"]        = Vector3.new(134, 20, -82),
+    ["Pineapple Patch"]     = Vector3.new(258, 68, -210),
+    ["Stump Field"]         = Vector3.new(422, 98, -174),
+    ["Cactus Field"]        = Vector3.new(-194, 68, -130),
+    ["Pumpkin Patch"]       = Vector3.new(-194, 68, -190),
+    ["Pine Tree Forest"]    = Vector3.new(-328, 68, -190),
+    ["Rose Field"]          = Vector3.new(-328, 20, 128),
+    ["Mountain Top Field"]  = Vector3.new(76, 176, -164),
+    ["Coconut Field"]       = Vector3.new(-258, 72, 464),
+    ["Pepper Patch"]        = Vector3.new(-486, 124, 524),
+    ["Dapper Bear Field"]   = Vector3.new(512, 140, -320),
+    ["Hub Field"]           = Vector3.new(0, 4, 0),
+    ["Ant Field"]           = Vector3.new(120, 30, 500),
+    ["Robo Field"]          = Vector3.new(310, 150, 200),
+}
+
+-- ============================================================
+-- HELPER FUNCTIONS: HIVE FINDER & SMOOTH TRAVEL TO CONVERTER
+-- ============================================================
+
+-- Find Player's Exact Hive Model
+local function getMyHive()
+    local hives = Workspace:FindFirstChild("Honeycombs") or Workspace:FindFirstChild("Hives")
+    if hives then
+        for _, hive in ipairs(hives:GetChildren()) do
+            local ownerVal = hive:FindFirstChild("Owner")
+            if ownerVal and (ownerVal.Value == LocalPlayer or (ownerVal.Value and tostring(ownerVal.Value) == LocalPlayer.Name)) then
+                return hive
+            end
+            for _, child in ipairs(hive:GetChildren()) do
+                if child.Name == "Owner" and (child.Value == LocalPlayer or (child.Value and tostring(child.Value) == LocalPlayer.Name)) then
+                    return hive
+                end
+            end
+        end
+    end
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if (obj.Name == "SpawnPos" or obj.Name == "Platform" or obj.Name == "Pad") and obj.Parent then
+            local owner = obj.Parent:FindFirstChild("Owner") or obj:FindFirstChild("Owner")
+            if owner and (owner.Value == LocalPlayer or (owner.Value and tostring(owner.Value) == LocalPlayer.Name)) then
+                return obj.Parent
+            end
+        end
+    end
+    return nil
+end
+
+-- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
+local function travelToHiveConverter()
+    print("[Berlin v0.1.18] Traveling Smoothly to My Hive Converter Pad at speed:", flySpeed)
+    local hive = getMyHive()
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+    if not hrp then return end
+
+    local targetCF = nil
+    if hive then
+        local platform = hive:FindFirstChild("Platform") or hive:FindFirstChild("Pad") or hive:FindFirstChild("Base") or hive:FindFirstChild("SpawnPos")
+        if platform then
+            targetCF = platform.CFrame * CFrame.new(0, 3.5, 0)
+        else
+            targetCF = hive:GetPivot() * CFrame.new(0, 3.5, -5)
+        end
+    else
+        for _, spawnPoint in ipairs(Workspace:GetDescendants()) do
+            if spawnPoint:IsA("SpawnLocation") and (spawnPoint.Name:find("Hive") or (spawnPoint.Parent and spawnPoint.Parent.Name:find("Hive"))) then
+                targetCF = spawnPoint.CFrame * CFrame.new(0, 3.5, 0)
+                break
+            end
+        end
+    end
+
+    if targetCF then
+        local distance = (hrp.Position - targetCF.Position).Magnitude
+        local travelTime = math.clamp(distance / math.max(flySpeed, 10), 0.2, 10)
+
+        hrp.Anchored = true
+        local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = targetCF})
+        tween:Play()
+        tween.Completed:Wait()
+        hrp.Anchored = false
+        print("[Berlin v0.1.18] Arrived at Hive Converter Pad!")
+
+        local events = ReplicatedStorage:FindFirstChild("Events")
+        if events and events:FindFirstChild("PlayerHiveCommand") then
+            events.PlayerHiveCommand:FireServer("MakeHoney")
+            events.PlayerHiveCommand:FireServer("ConvertHoney")
+        end
+    else
+        warn("[Berlin v0.1.18] Hive not found! Please claim a hive first.")
+    end
+end
+
+-- Fire Item Buff RemoteEvent
+local function useInventoryBuff(itemName)
+    local events = ReplicatedStorage:FindFirstChild("Events")
+    if events and events:FindFirstChild("PlayerItemEvent") then
+        events.PlayerItemEvent:FireServer(itemName)
+        print("[Berlin v0.1.18] Used Buff:", itemName)
+    end
+end
+
+-- Fire Dispenser / Toy RemoteEvent
+local function collectDispenser(toyName)
+    local events = ReplicatedStorage:FindFirstChild("Events")
+    if events and events:FindFirstChild("ToyEvent") then
+        events.ToyEvent:FireServer(toyName)
+        print("[Berlin v0.1.18] Collected Dispenser:", toyName)
+    end
+end
+
+-- Fire Quest RemoteEvent
+local function takeQuest(npcName)
+    local events = ReplicatedStorage:FindFirstChild("Events")
+    if events and events:FindFirstChild("QuestEvent") then
+        events.QuestEvent:FireServer("AcceptQuest", npcName)
+        print("[Berlin v0.1.18] Took Quest from:", npcName)
+    end
+end
+
+-- ============================================================
+-- HOME TAB
+-- ============================================================
+local homeFolder = homeTab:AddFolder("Home Overview", true, "left")
+
+local uptimeLbl = homeFolder:AddLabel("Uptime: 00:00:00")
+local serverUptimeLbl = homeFolder:AddLabel("Server Uptime: 00:00:00")
+local honeyLbl = homeFolder:AddLabel("Session Honey: 0")
+local hphLbl = homeFolder:AddLabel("Honey per Hour: 0")
+
+homeFolder:AddSwitch("Stop Everything", function(state)
+    stopEverything = state
+    print("[Berlin v0.1.18] Stop Everything:", state)
+end)
+
+homeFolder:AddButton("Fly to My Hive Converter", function()
+    print("[Berlin v0.1.18] Traveling to Hive Converter...")
+    travelToHiveConverter()
+end)
+
+-- Live Timers Loop
+task.spawn(function()
+    while task.wait(1) do
+        local elapsed = os.time() - startTime
+        local h = math.floor(elapsed / 3600)
+        local m = math.floor((elapsed % 3600) / 60)
+        local s = elapsed % 60
+        if uptimeLbl then uptimeLbl.Text = string.format("Uptime: %02d:%02d:%02d", h, m, s) end
+
+        local sUptime = math.floor(Workspace.DistributedGameTime)
+        local sh = math.floor(sUptime / 3600)
+        local sm = math.floor((sUptime % 3600) / 60)
+        local ss = sUptime % 60
+        if serverUptimeLbl then serverUptimeLbl.Text = string.format("Server Uptime: %02d:%02d:%02d", sh, sm, ss) end
+    end
+end)
+
+-- ============================================================
+-- FARMING TAB (2-COLUMN COLLAPSIBLE CARDS MATCHING ATLAS V1.0)
+-- ============================================================
+
+local selectedField = "Pine Tree Forest"
+local autoFarmActive = false
+local autoDigActive = false
+local autoSprinklerActive = false
 
 -- LEFT COLUMN (COLUMN 1)
 local farmFolder = farmTab:AddFolder("Farming", true, "left")
 
+local fieldList = {}
+for name, _ in pairs(FieldPositions) do
+    table.insert(fieldList, name)
+end
+table.sort(fieldList)
+
 farmFolder:AddDropdown("Field", function(selected)
-    print("[Atlas UI] Selected Field:", selected)
-end, {
-    "Pine Tree Forest", "Sunflower Field", "Mushroom Field", "Dandelion Field",
-    "Blue Flower Field", "Clover Field", "Strawberry Field", "Spider Field",
-    "Bamboo Field", "Pineapple Patch", "Stump Field", "Cactus Field",
-    "Pumpkin Patch", "Rose Field", "Mountain Top Field", "Coconut Field",
-    "Pepper Patch", "Dapper Bear Field", "Hub Field", "Ant Field", "Robo Field"
-})
+    selectedField = selected
+    print("[Berlin v0.1.18] Selected Field:", selectedField)
+end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
-    print("[Atlas UI] Autofarm:", state)
+    autoFarmActive = state
+    print("[Berlin v0.1.18] Autofarm:", state)
 end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
-    print("[Atlas UI] Auto Sprinkler:", state)
+    autoSprinklerActive = state
 end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
-    print("[Atlas UI] Auto Dig:", state)
+    autoDigActive = state
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
-farmTab:AddFolder("Convert Settings", false, "left")
+local convertFolder = farmTab:AddFolder("Convert Settings", false, "left")
+convertFolder:AddButton("Convert Honey at Hive", function()
+    travelToHiveConverter()
+end)
+
 farmTab:AddFolder("Guiding Star Settings", false, "left")
 farmTab:AddFolder("Natro Patterns", false, "left")
 farmTab:AddFolder("Face Settings", false, "left")
@@ -2448,18 +2649,120 @@ farmTab:AddFolder("Robo Bear Challenge", false, "right")
 farmTab:AddFolder("Follow Player", false, "right")
 
 -- ============================================================
--- HOME TAB
+-- OTHER TABS: COMBAT, TOYS, CONFIG, DEBUG
 -- ============================================================
-local homeFolder = homeTab:AddFolder("Home Overview", true, "left")
-homeFolder:AddLabel("Status: Ready")
-homeFolder:AddLabel("Version: Berlin v0.1.17")
 
--- ============================================================
+-- TOYS TAB (DISPENSERS)
+local dispenserFolder = toysTab:AddFolder("Dispensers", true, "left")
+dispenserFolder:AddButton("Collect All Dispensers", function()
+    collectDispenser("Blueberry Dispenser")
+    collectDispenser("Strawberry Dispenser")
+    collectDispenser("Honey Dispenser")
+    collectDispenser("Treat Dispenser")
+    collectDispenser("Coconut Dispenser")
+    collectDispenser("Glue Dispenser")
+    collectDispenser("Free Ant Pass")
+    collectDispenser("Wealth Clock")
+end)
+
+-- QUESTS TAB
+local questFolder = questsTab:AddFolder("Quests", true, "left")
+questFolder:AddButton("Take All Available Quests", function()
+    takeQuest("Black Bear")
+    takeQuest("Brown Bear")
+    takeQuest("Panda Bear")
+    takeQuest("Science Bear")
+    takeQuest("Polar Bear")
+end)
+
 -- CONFIG TAB
--- ============================================================
 local configFolder = configTab:AddFolder("Movement Controls", true, "left")
-configFolder:AddSlider("Fly Speed", function(val) end, {min = 10, max = 300, readonly = false})
-configFolder:AddSlider("WalkSpeed", function(val) end, {min = 16, max = 300, readonly = false})
-configFolder:AddSlider("JumpPower", function(val) end, {min = 50, max = 300, readonly = false})
 
-print("[Atlas UI] Berlin v0.1.17 Standalone UI loaded successfully!")
+configFolder:AddSlider("Fly Speed", function(val)
+    flySpeed = val
+    print("[Berlin v0.1.18] Fly Speed set to:", val)
+end, {min = 10, max = 300, readonly = false})
+
+configFolder:AddSlider("WalkSpeed", function(val)
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = val end
+end, {min = 16, max = 300, readonly = false})
+
+configFolder:AddSlider("JumpPower", function(val)
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.JumpPower = val end
+end, {min = 50, max = 300, readonly = false})
+
+-- ============================================================
+-- AUTOFARM ENGINE LOOP (HUMANOID WALKING + TOKEN COLLECT + AUTO CONVERT)
+-- ============================================================
+task.spawn(function()
+    local angle = 0
+    while task.wait(0.2) do
+        if not stopEverything and autoFarmActive then
+            local char = LocalPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            local tool = char and char:FindFirstChildOfClass("Tool")
+
+            -- Auto Dig / Scoop Tool
+            if autoDigActive or autoFarmActive then
+                if tool then tool:Activate() end
+            end
+
+            if hrp and hum then
+                local center = FieldPositions[selectedField] or Vector3.new(0, 4, 0)
+                local distFromField = (hrp.Position - center).Magnitude
+
+                -- If player is far off field (>120 studs), smoothly travel to field first
+                if distFromField > 120 then
+                    local travelTime = math.clamp(distFromField / math.max(flySpeed, 10), 0.5, 6)
+                    hrp.Anchored = true
+                    local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = CFrame.new(center + Vector3.new(0, 4, 0))})
+                    tween:Play()
+                    tween.Completed:Wait()
+                    hrp.Anchored = false
+                end
+
+                -- Scan for Tokens inside the field
+                local collectibles = Workspace:FindFirstChild("Collectibles") or Workspace:FindFirstChild("Tokens")
+                local targetToken = nil
+                if collectibles then
+                    local minDistance = 9999
+                    for _, token in ipairs(collectibles:GetChildren()) do
+                        if token:IsA("BasePart") and (token.Position - center).Magnitude < 45 then
+                            local d = (hrp.Position - token.Position).Magnitude
+                            if d < minDistance then
+                                minDistance = d
+                                targetToken = token
+                            end
+                        end
+                    end
+                end
+
+                if targetToken then
+                    -- WALK / RUN smoothly to token using Humanoid:MoveTo!
+                    hum:MoveTo(targetToken.Position)
+                else
+                    -- Walk around inside field radius naturally
+                    angle = angle + 0.5
+                    local offsetX = math.cos(angle) * 20
+                    local offsetZ = math.sin(angle) * 20
+                    local patrolPoint = center + Vector3.new(offsetX, 0, offsetZ)
+                    hum:MoveTo(patrolPoint)
+                end
+
+                -- Auto Convert check if Pollen Container is Full
+                local pollen = LocalPlayer:FindFirstChild("Pollen")
+                local capacity = LocalPlayer:FindFirstChild("Capacity")
+                if pollen and capacity and pollen.Value >= capacity.Value and capacity.Value > 0 then
+                    print("[Berlin v0.1.18] Pollen Full! Traveling to Hive...")
+                    travelToHiveConverter()
+                    task.wait(4)
+                end
+            end
+        end
+    end
+end)
