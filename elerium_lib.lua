@@ -1253,12 +1253,12 @@ function library:AddWindow(title, options)
 				left_col.Parent = new_tab
 
 				local left_layout = Instance.new("UIListLayout")
-				left_layout.Padding = UDim.new(0, 6)
+				left_layout.Padding = UDim.new(0, 4)
 				left_layout.SortOrder = Enum.SortOrder.LayoutOrder
 				left_layout.Parent = left_col
 
 				left_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-					left_col.CanvasSize = UDim2.new(0, 0, 0, left_layout.AbsoluteContentSize.Y + 10)
+					left_col.CanvasSize = UDim2.new(0, 0, 0, left_layout.AbsoluteContentSize.Y + 6)
 				end)
 
 				local right_col = Instance.new("ScrollingFrame")
@@ -1272,12 +1272,12 @@ function library:AddWindow(title, options)
 				right_col.Parent = new_tab
 
 				local right_layout = Instance.new("UIListLayout")
-				right_layout.Padding = UDim.new(0, 6)
+				right_layout.Padding = UDim.new(0, 4)
 				right_layout.SortOrder = Enum.SortOrder.LayoutOrder
 				right_layout.Parent = right_col
 
 				right_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-					right_col.CanvasSize = UDim2.new(0, 0, 0, right_layout.AbsoluteContentSize.Y + 10)
+					right_col.CanvasSize = UDim2.new(0, 0, 0, right_layout.AbsoluteContentSize.Y + 6)
 				end)
 
 				tab_data.LeftCol = left_col
@@ -2265,7 +2265,7 @@ function library:AddWindow(title, options)
 						local new_folder = Instance.new("Frame")
 						new_folder.Name = folder_name .. "Folder"
 						new_folder.Parent = target_col
-						new_folder.Size = UDim2.new(1, -6, 0, 32)
+						new_folder.Size = UDim2.new(1, -6, 0, 26)
 						new_folder.BackgroundColor3 = Color3.fromRGB(26, 27, 33) -- Dark Card Container Box
 						new_folder.BackgroundTransparency = 0
 						new_folder.BorderSizePixel = 0
@@ -2279,14 +2279,14 @@ function library:AddWindow(title, options)
 						local f_button = Instance.new("TextButton")
 						f_button.Name = "Button"
 						f_button.Parent = new_folder
-						f_button.Size = UDim2.new(1, 0, 0, 30)
+						f_button.Size = UDim2.new(1, 0, 0, 26)
 						f_button.Position = UDim2.new(0, 0, 0, 0)
 						f_button.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
 						f_button.BackgroundTransparency = 0
 						f_button.BorderSizePixel = 0
 						f_button.Text = "   " .. folder_name
 						f_button.Font = Enum.Font.GothamBold
-						f_button.TextSize = 13
+						f_button.TextSize = 12
 						f_button.TextColor3 = Color3.fromRGB(240, 240, 240)
 						f_button.TextXAlignment = Enum.TextXAlignment.Left
 						f_button.AutoButtonColor = true
@@ -2299,8 +2299,8 @@ function library:AddWindow(title, options)
 						-- Original Window Toggle Arrow Asset (assetId=4731371541)
 						local arrow = Instance.new("ImageLabel")
 						arrow.Name = "ArrowIcon"
-						arrow.Size = UDim2.new(0, 16, 0, 16)
-						arrow.Position = UDim2.new(1, -24, 0.5, -8)
+						arrow.Size = UDim2.new(0, 14, 0, 14)
+						arrow.Position = UDim2.new(1, -22, 0.5, -7)
 						arrow.BackgroundTransparency = 1
 						arrow.Image = "https://www.roblox.com/Thumbs/Asset.ashx?width=420&height=420&assetId=4731371541"
 						arrow.ImageColor3 = Color3.fromRGB(240, 240, 240)
@@ -2312,7 +2312,7 @@ function library:AddWindow(title, options)
 						f_objects.Name = "Objects"
 						f_objects.Parent = new_folder
 						f_objects.BackgroundTransparency = 1
-						f_objects.Position = UDim2.new(0, 4, 0, 34)
+						f_objects.Position = UDim2.new(0, 4, 0, 30)
 						f_objects.Size = UDim2.new(1, -8, 0, 0)
 						f_objects.Visible = is_open
 						f_objects.ZIndex = baseZ + 3
@@ -2320,7 +2320,7 @@ function library:AddWindow(title, options)
 						local f_layout = f_objects:FindFirstChildOfClass("UIListLayout")
 						if not f_layout then
 							f_layout = Instance.new("UIListLayout")
-							f_layout.Padding = UDim.new(0, 5)
+							f_layout.Padding = UDim.new(0, 4)
 							f_layout.Parent = f_objects
 						end
 
@@ -2333,7 +2333,7 @@ function library:AddWindow(title, options)
 										count = count + 1
 									end
 								end
-								h = count * 26
+								h = count * 24
 							end
 
 							if is_open then
@@ -2343,14 +2343,11 @@ function library:AddWindow(title, options)
 								f_objects.Visible = true
 								if animate then
 									Resize(arrow, {Rotation = 90}, 0.2)
-									Resize(new_folder, {Size = UDim2.new(1, -6, 0, h + 42)}, 0.2)
+									Resize(new_folder, {Size = UDim2.new(1, -6, 0, h + 34)}, 0.2)
 								else
 									arrow.Rotation = 90
-									new_folder.Size = UDim2.new(1, -6, 0, h + 42)
+									new_folder.Size = UDim2.new(1, -6, 0, h + 34)
 								end
-								task.delay(0.2, function()
-									if is_open then new_folder.ClipsDescendants = false end
-								end)
 							else
 								f_button.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
 								new_folder.BackgroundColor3 = Color3.fromRGB(36, 37, 44)
@@ -2358,7 +2355,7 @@ function library:AddWindow(title, options)
 								new_folder.ClipsDescendants = true
 								if animate then
 									Resize(arrow, {Rotation = 180}, 0.2)
-									local t = Resize(new_folder, {Size = UDim2.new(1, -6, 0, 32)}, 0.2)
+									local t = Resize(new_folder, {Size = UDim2.new(1, -6, 0, 26)}, 0.2)
 									if t then
 										t.Completed:Connect(function()
 											if not is_open then f_objects.Visible = false end
@@ -2366,7 +2363,7 @@ function library:AddWindow(title, options)
 									end
 								else
 									arrow.Rotation = 180
-									new_folder.Size = UDim2.new(1, -6, 0, 32)
+									new_folder.Size = UDim2.new(1, -6, 0, 26)
 									f_objects.Visible = false
 								end
 							end
