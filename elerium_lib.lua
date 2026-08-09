@@ -2143,6 +2143,7 @@ function library:AddWindow(title, options)
 							target_col = self.TabFrame or new_tab
 						end
 
+						local baseZ = (windows * 10) + 10
 						local new_folder = Instance.new("Frame")
 						new_folder.Name = folder_name .. "Folder"
 						new_folder.Parent = target_col
@@ -2151,6 +2152,7 @@ function library:AddWindow(title, options)
 						new_folder.BackgroundTransparency = 0
 						new_folder.BorderSizePixel = 0
 						new_folder.ClipsDescendants = true
+						new_folder.ZIndex = baseZ
 
 						local card_corner = Instance.new("UICorner")
 						card_corner.CornerRadius = UDim.new(0, 6)
@@ -2170,7 +2172,7 @@ function library:AddWindow(title, options)
 						f_button.TextColor3 = Color3.fromRGB(240, 240, 240)
 						f_button.TextXAlignment = Enum.TextXAlignment.Left
 						f_button.AutoButtonColor = true
-						f_button.ZIndex = 5
+						f_button.ZIndex = baseZ + 1
 
 						local f_corner = Instance.new("UICorner")
 						f_corner.CornerRadius = UDim.new(0, 5)
@@ -2184,7 +2186,7 @@ function library:AddWindow(title, options)
 						arrow.Font = Enum.Font.GothamBold
 						arrow.TextSize = 14
 						arrow.TextColor3 = Color3.fromRGB(220, 220, 220)
-						arrow.ZIndex = 6
+						arrow.ZIndex = baseZ + 2
 						arrow.Parent = f_button
 						arrow.Text = is_open and "▼" or "◀"
 
@@ -2195,6 +2197,7 @@ function library:AddWindow(title, options)
 						f_objects.Position = UDim2.new(0, 4, 0, 34)
 						f_objects.Size = UDim2.new(1, -8, 0, 0)
 						f_objects.Visible = is_open
+						f_objects.ZIndex = baseZ + 3
 
 						local f_layout = f_objects:FindFirstChildOfClass("UIListLayout")
 						if not f_layout then
