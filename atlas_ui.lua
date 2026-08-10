@@ -1,6 +1,6 @@
 -- ============================================================
--- BERLIN V0.1.46 | BEE SWARM SIMULATOR
--- MAIN SINGLE FILE LOADER - FULL FEATURED RELEASE
+-- BERLIN V0.1.47 | BEE SWARM SIMULATOR
+-- MAIN SINGLE FILE LOADER - WITH CONSOLE LOGS WINDOW & DEBOUNCED SWITCHES
 -- ============================================================
 
 local library = (function()
@@ -1392,6 +1392,7 @@ function library:AddWindow(title, options)
 						end
 
 						local toggled = false
+						local clicking = false
 						local function updateSwitchColor()
 							if bgImg then
 								bgImg.ImageColor3 = toggled and Color3.fromRGB(50, 95, 175) or Color3.fromRGB(32, 48, 75)
@@ -1399,17 +1400,20 @@ function library:AddWindow(title, options)
 						end
 
 						switch.MouseButton1Click:Connect(function()
+							if clicking then return end
+							clicking = true
 							toggled = not toggled
 							switch.Text = toggled and utf8.char(10003) or ""
 							updateSwitchColor()
 							pcall(callback, toggled)
+							task.delay(0.15, function() clicking = false end)
 						end)
 
 						function switch_data:Set(bool)
 							toggled = (typeof(bool) == "boolean") and bool or false
 							switch.Text = toggled and utf8.char(10003) or ""
 							updateSwitchColor()
-							pcall(callback,toggled)
+							pcall(callback, toggled)
 						end
 
 						return switch_data, switch
@@ -2493,7 +2497,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window (680x370 Exact Compact Scale)
-local window = library:AddWindow("Berlin v0.1.46", {
+local window = library:AddWindow("Berlin v0.1.47", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(680, 370),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2502,7 +2506,7 @@ local window = library:AddWindow("Berlin v0.1.46", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.46] Searching for:", query)
+    print("[Berlin v0.1.47] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2527,6 +2531,7 @@ local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
+local LogService = game:GetService("LogService")
 local LocalPlayer = Players.LocalPlayer
 
 local startTime = os.time()
@@ -2592,6 +2597,159 @@ end
 local initialHoney = getHoney()
 
 -- ============================================================
+-- CONSOLE LOGS WINDOW (SMALLER ELERIUM WINDOW WITH H & V SCROLL)
+-- ============================================================
+local consoleWindow = nil
+local consoleLogsFrame = nil
+local consoleTextLabel = nil
+local consoleLogsList = {}
+
+local function createConsoleWindow()
+    if consoleWindow then
+        consoleWindow.Visible = not consoleWindow.Visible
+        return
+    end
+
+    local mainGui = LocalPlayer.PlayerGui:FindFirstChild("Elerium") or LocalPlayer.PlayerGui:FindFirstChild("Berlin")
+    if not mainGui then
+        for _, child in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
+            if child:FindFirstChild("Window") or child.Name:find("Elerium") then
+                mainGui = child
+                break
+            end
+        end
+    end
+
+    if not mainGui then return end
+
+    -- Floating Console Window (Slightly smaller: 520x280)
+    consoleWindow = Instance.new("Frame")
+    consoleWindow.Name = "ConsoleWindow"
+    consoleWindow.Parent = mainGui
+    consoleWindow.Size = UDim2.new(0, 520, 0, 280)
+    consoleWindow.Position = UDim2.new(0.5, -260, 0.5, -140)
+    consoleWindow.BackgroundColor3 = Color3.fromRGB(18, 19, 24)
+    consoleWindow.BorderSizePixel = 0
+    consoleWindow.ZIndex = 500
+    consoleWindow.ClipsDescendants = true
+
+    local winCorner = Instance.new("UICorner")
+    winCorner.CornerRadius = UDim.new(0, 6)
+    winCorner.Parent = consoleWindow
+
+    -- Top Crimson Bar
+    local topBar = Instance.new("Frame")
+    topBar.Name = "TopBar"
+    topBar.Parent = consoleWindow
+    topBar.Size = UDim2.new(1, 0, 0, 28)
+    topBar.BackgroundColor3 = Color3.fromRGB(180, 30, 40)
+    topBar.BorderSizePixel = 0
+    topBar.ZIndex = 501
+
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 6)
+    barCorner.Parent = topBar
+
+    local barTitle = Instance.new("TextLabel")
+    barTitle.Name = "Title"
+    barTitle.Parent = topBar
+    barTitle.Size = UDim2.new(1, -40, 1, 0)
+    barTitle.Position = UDim2.new(0, 10, 0, 0)
+    barTitle.BackgroundTransparency = 1
+    barTitle.Font = Enum.Font.GothamBold
+    barTitle.TextSize = 12
+    barTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    barTitle.TextXAlignment = Enum.TextXAlignment.Left
+    barTitle.Text = "Berlin Console Logs"
+    barTitle.ZIndex = 502
+
+    -- Close Button
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Name = "CloseButton"
+    closeBtn.Parent = topBar
+    closeBtn.Size = UDim2.new(0, 24, 0, 24)
+    closeBtn.Position = UDim2.new(1, -26, 0.5, -12)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.TextSize = 14
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeBtn.Text = "X"
+    closeBtn.ZIndex = 502
+    closeBtn.MouseButton1Click:Connect(function()
+        consoleWindow.Visible = false
+    end)
+
+    -- Make Console Window Draggable
+    local dragging, dragInput, dragStart, startPos
+    topBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = consoleWindow.Position
+        end
+    end)
+    topBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            consoleWindow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    -- ScrollingFrame supporting BOTH Horizontal & Vertical Scrolling
+    consoleLogsFrame = Instance.new("ScrollingFrame")
+    consoleLogsFrame.Name = "LogsScroll"
+    consoleLogsFrame.Parent = consoleWindow
+    consoleLogsFrame.Position = UDim2.new(0, 6, 0, 32)
+    consoleLogsFrame.Size = UDim2.new(1, -12, 1, -38)
+    consoleLogsFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 16)
+    consoleLogsFrame.BorderSizePixel = 0
+    consoleLogsFrame.ScrollBarThickness = 6
+    consoleLogsFrame.CanvasSize = UDim2.new(0, 1600, 0, 1000) -- Expanded Width & Height for Scrolling
+    consoleLogsFrame.ZIndex = 501
+
+    consoleTextLabel = Instance.new("TextLabel")
+    consoleTextLabel.Name = "LogsText"
+    consoleTextLabel.Parent = consoleLogsFrame
+    consoleTextLabel.Size = UDim2.new(1, 0, 1, 0)
+    consoleTextLabel.Position = UDim2.new(0, 5, 0, 5)
+    consoleTextLabel.BackgroundTransparency = 1
+    consoleTextLabel.Font = Enum.Font.Code
+    consoleTextLabel.TextSize = 11
+    consoleTextLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+    consoleTextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    consoleTextLabel.TextYAlignment = Enum.TextYAlignment.Top
+    consoleTextLabel.Text = "[Berlin Console] Output Logs initialized...
+"
+    consoleTextLabel.ZIndex = 502
+
+    -- Hook LogService MessageOut
+    LogService.MessageOut:Connect(function(msg, messageType)
+        local timestamp = os.date("%H:%M:%S")
+        local prefix = "[INFO]"
+        if messageType == Enum.MessageType.MessageWarning then
+            prefix = "[WARN]"
+        elseif messageType == Enum.MessageType.MessageError then
+            prefix = "[ERR]"
+        end
+        local line = string.format("[%s] %s %s
+", timestamp, prefix, tostring(msg))
+        table.insert(consoleLogsList, line)
+        if #consoleLogsList > 200 then
+            table.remove(consoleLogsList, 1)
+        end
+        consoleTextLabel.Text = table.concat(consoleLogsList, "")
+        local lineCount = #consoleLogsList
+        consoleLogsFrame.CanvasSize = UDim2.new(0, 1800, 0, math.max(lineCount * 14 + 20, 240))
+        consoleLogsFrame.CanvasPosition = Vector2.new(0, consoleLogsFrame.CanvasSize.Y.Offset)
+    end)
+end
+
+-- ============================================================
 -- STABLE SPEED LOCK ENGINE (PREVENTS BSS BUFFS FROM RESETTING SPEED)
 -- ============================================================
 local function enforceStableSpeed()
@@ -2639,7 +2797,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.46] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
+    print("[Berlin v0.1.47] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2672,7 +2830,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.46] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.47] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2680,7 +2838,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.46] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.47] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2696,7 +2854,7 @@ local function placeSprinklerInField(fieldName)
             events.PlayerItemEvent:FireServer("Sprinkler")
         end
     end
-    print("[Berlin v0.1.46] Placed Sprinkler in Center of Field:", fieldName)
+    print("[Berlin v0.1.47] Placed Sprinkler in Center of Field:", fieldName)
 end
 
 -- Fire Item Buff RemoteEvent
@@ -2704,7 +2862,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.46] Used Buff:", itemName)
+        print("[Berlin v0.1.47] Used Buff:", itemName)
     end
 end
 
@@ -2713,7 +2871,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.46] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.47] Collected Dispenser:", toyName)
     end
 end
 
@@ -2722,7 +2880,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.46] Took Quest from:", npcName)
+        print("[Berlin v0.1.47] Took Quest from:", npcName)
     end
 end
 
@@ -2738,11 +2896,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0/h")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.46] Stop Everything:", state)
+    print("[Berlin v0.1.47] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.46] Traveling to Hive Converter...")
+    print("[Berlin v0.1.47] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2791,7 +2949,7 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.46] Selected Field:", selectedField)
+    print("[Berlin v0.1.47] Selected Field:", selectedField)
     if autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2799,7 +2957,7 @@ end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.46] Autofarm:", state)
+    print("[Berlin v0.1.47] Autofarm set to:", state)
     if state and autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2807,7 +2965,7 @@ end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
     autoSprinklerActive = state
-    print("[Berlin v0.1.46] Auto Sprinkler:", state)
+    print("[Berlin v0.1.47] Auto Sprinkler set to:", state)
     if state then
         placeSprinklerInField(selectedField)
     end
@@ -2815,7 +2973,7 @@ end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
     autoDigActive = state
-    print("[Berlin v0.1.46] Auto Dig:", state)
+    print("[Berlin v0.1.47] Auto Dig set to:", state)
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
@@ -2874,18 +3032,18 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSwitch("Stable Speed Lock", function(state)
     speedLockEnabled = state
-    print("[Berlin v0.1.46] Stable Speed Lock:", state)
+    print("[Berlin v0.1.47] Stable Speed Lock:", state)
 end)
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.46] Fly Speed set to:", val)
+    print("[Berlin v0.1.47] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("Walk Speed", function(val)
     walkSpeed = val
     enforceStableSpeed()
-    print("[Berlin v0.1.46] Walk Speed set to:", val)
+    print("[Berlin v0.1.47] Walk Speed set to:", val)
 end, {min = 16, max = 300, readonly = false})
 
 configFolder:AddSlider("JumpPower", function(val)
@@ -2895,9 +3053,13 @@ configFolder:AddSlider("JumpPower", function(val)
 end, {min = 50, max = 300, readonly = false})
 
 -- ============================================================
--- AUTOMATED UI DIAGNOSTICS ENGINE IN DEBUG TAB
+-- AUTOMATED UI DIAGNOSTICS & FLOATING CONSOLE WINDOW IN DEBUG TAB
 -- ============================================================
-local debugFolder = debugTab:AddFolder("UI Diagnostics", true, "left")
+local debugFolder = debugTab:AddFolder("Console & Diagnostics", true, "left")
+
+debugFolder:AddButton("Open Console Logs Window", function()
+    createConsoleWindow()
+end)
 
 local function runUIDiagnostics()
     print("==================================================")
@@ -3105,7 +3267,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
-                    print("[Berlin v0.1.46] Pollen Full! Traveling smoothly to Hive...")
+                    print("[Berlin v0.1.47] Pollen Full! Traveling smoothly to Hive...")
                     travelToHiveConverter()
                     task.wait(3)
                 end

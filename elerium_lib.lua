@@ -1386,6 +1386,7 @@ function library:AddWindow(title, options)
 						end
 
 						local toggled = false
+						local clicking = false
 						local function updateSwitchColor()
 							if bgImg then
 								bgImg.ImageColor3 = toggled and Color3.fromRGB(50, 95, 175) or Color3.fromRGB(32, 48, 75)
@@ -1393,17 +1394,20 @@ function library:AddWindow(title, options)
 						end
 
 						switch.MouseButton1Click:Connect(function()
+							if clicking then return end
+							clicking = true
 							toggled = not toggled
 							switch.Text = toggled and utf8.char(10003) or ""
 							updateSwitchColor()
 							pcall(callback, toggled)
+							task.delay(0.15, function() clicking = false end)
 						end)
 
 						function switch_data:Set(bool)
 							toggled = (typeof(bool) == "boolean") and bool or false
 							switch.Text = toggled and utf8.char(10003) or ""
 							updateSwitchColor()
-							pcall(callback,toggled)
+							pcall(callback, toggled)
 						end
 
 						return switch_data, switch
