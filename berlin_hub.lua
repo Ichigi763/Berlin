@@ -1,6 +1,6 @@
 -- ============================================================
--- BERLIN V0.1.48 | BEE SWARM SIMULATOR
--- MAIN SINGLE FILE LOADER - WITH CONTINUOUS HOLD DIG & CENTER SPRINKLER BUILDER
+-- BERLIN V0.1.49 | BEE SWARM SIMULATOR
+-- MAIN SINGLE FILE LOADER - SYNTAX ERROR FIX
 -- ============================================================
 
 local library = (function()
@@ -2497,7 +2497,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window (680x370 Exact Compact Scale)
-local window = library:AddWindow("Berlin v0.1.48", {
+local window = library:AddWindow("Berlin v0.1.49", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(680, 370),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2506,7 +2506,7 @@ local window = library:AddWindow("Berlin v0.1.48", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.48] Searching for:", query)
+    print("[Berlin v0.1.49] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2718,8 +2718,7 @@ local function createConsoleWindow()
     consoleTextLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
     consoleTextLabel.TextXAlignment = Enum.TextXAlignment.Left
     consoleTextLabel.TextYAlignment = Enum.TextYAlignment.Top
-    consoleTextLabel.Text = "[Berlin Console] Output Logs initialized...
-"
+    consoleTextLabel.Text = "[Berlin Console] Output Logs initialized...\\n"
     consoleTextLabel.ZIndex = 502
 
     LogService.MessageOut:Connect(function(msg, messageType)
@@ -2730,8 +2729,7 @@ local function createConsoleWindow()
         elseif messageType == Enum.MessageType.MessageError then
             prefix = "[ERR]"
         end
-        local line = string.format("[%s] %s %s
-", timestamp, prefix, tostring(msg))
+        local line = string.format("[%s] %s %s\\n", timestamp, prefix, tostring(msg))
         table.insert(consoleLogsList, line)
         if #consoleLogsList > 200 then
             table.remove(consoleLogsList, 1)
@@ -2791,7 +2789,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.48] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
+    print("[Berlin v0.1.49] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2824,7 +2822,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.48] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.49] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2832,7 +2830,7 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.48] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.49] Hive not found! Please claim a hive first.")
     end
 end
 
@@ -2841,9 +2839,8 @@ local function placeSprinklerInField(fieldName)
     local center = FieldPositions[fieldName]
     local events = ReplicatedStorage:FindFirstChild("Events")
     
-    print("[Berlin v0.1.48] Placing Sprinkler Builder in Center of Field:", fieldName)
+    print("[Berlin v0.1.49] Placing Sprinkler Builder in Center of Field:", fieldName)
     
-    -- Method 1: Place via ToyEvent / PlayerItemEvent Remotes
     if events then
         if events:FindFirstChild("ToyEvent") then
             events.ToyEvent:FireServer("Sprinkler")
@@ -2857,7 +2854,6 @@ local function placeSprinklerInField(fieldName)
         end
     end
 
-    -- Method 2: Fire Tool/Item Remote with Center Position
     pcall(function()
         local itemEvent = events and events:FindFirstChild("PlayerItemEvent")
         if itemEvent and center then
@@ -2871,7 +2867,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.48] Used Buff:", itemName)
+        print("[Berlin v0.1.49] Used Buff:", itemName)
     end
 end
 
@@ -2880,7 +2876,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.48] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.49] Collected Dispenser:", toyName)
     end
 end
 
@@ -2889,7 +2885,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.48] Took Quest from:", npcName)
+        print("[Berlin v0.1.49] Took Quest from:", npcName)
     end
 end
 
@@ -2905,11 +2901,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0/h")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.48] Stop Everything:", state)
+    print("[Berlin v0.1.49] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.48] Traveling to Hive Converter...")
+    print("[Berlin v0.1.49] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2958,7 +2954,7 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.48] Selected Field:", selectedField)
+    print("[Berlin v0.1.49] Selected Field:", selectedField)
     if autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2966,7 +2962,7 @@ end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.48] Autofarm set to:", state)
+    print("[Berlin v0.1.49] Autofarm set to:", state)
     if state and autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2974,7 +2970,7 @@ end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
     autoSprinklerActive = state
-    print("[Berlin v0.1.48] Auto Sprinkler set to:", state)
+    print("[Berlin v0.1.49] Auto Sprinkler set to:", state)
     if state then
         placeSprinklerInField(selectedField)
     end
@@ -2982,7 +2978,7 @@ end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
     autoDigActive = state
-    print("[Berlin v0.1.48] Auto Dig set to:", state)
+    print("[Berlin v0.1.49] Auto Dig set to:", state)
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
@@ -3041,18 +3037,18 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSwitch("Stable Speed Lock", function(state)
     speedLockEnabled = state
-    print("[Berlin v0.1.48] Stable Speed Lock:", state)
+    print("[Berlin v0.1.49] Stable Speed Lock:", state)
 end)
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.48] Fly Speed set to:", val)
+    print("[Berlin v0.1.49] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("Walk Speed", function(val)
     walkSpeed = val
     enforceStableSpeed()
-    print("[Berlin v0.1.48] Walk Speed set to:", val)
+    print("[Berlin v0.1.49] Walk Speed set to:", val)
 end, {min = 16, max = 300, readonly = false})
 
 configFolder:AddSlider("JumpPower", function(val)
@@ -3282,7 +3278,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
-                    print("[Berlin v0.1.48] Pollen Full! Traveling smoothly to Hive...")
+                    print("[Berlin v0.1.49] Pollen Full! Traveling smoothly to Hive...")
                     travelToHiveConverter()
                     task.wait(3)
                 end
