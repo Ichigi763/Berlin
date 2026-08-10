@@ -1,6 +1,7 @@
 -- ============================================================
--- BERLIN V0.1.50 | BEE SWARM SIMULATOR
--- MAIN SINGLE FILE LOADER - STRICT AUTO DIG & BACKGROUND EVENT DIGGING ENGINE
+-- BERLIN V0.1.51 | BEE SWARM SIMULATOR
+-- FULL FEATURED RELEASE: AUTO-EQUIP DIG, SPRINKLER TIMER,
+-- COMBAT TAB, PLANTERS TAB, AUTO DISPENSERS & AUTO QUESTS
 -- ============================================================
 
 local library = (function()
@@ -2497,8 +2498,8 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window (680x370 Exact Compact Scale)
-local window = library:AddWindow("Berlin v0.1.50", {
-    main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
+local window = library:AddWindow("Berlin v0.1.51", {
+    main_color = Color3.fromRGB(180, 30, 40),
     min_size = Vector2.new(680, 370),
     toggle_key = Enum.KeyCode.RightShift,
     can_resize = true,
@@ -2506,10 +2507,10 @@ local window = library:AddWindow("Berlin v0.1.50", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.50] Searching for:", query)
+    print("[Berlin v0.1.51] Searching for:", query)
 end)
 
--- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
+-- Add Vertical Sidebar Tabs with Lucide Icons
 local homeTab     = window:AddTab("Home", "info")
 local farmTab     = window:AddTab("Farming", "house")
 local combatTab   = window:AddTab("Combat", "swords")
@@ -2531,15 +2532,25 @@ local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local LogService = game:GetService("LogService")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
 local startTime = os.time()
 local stopEverything = false
-local flySpeed = 75 -- Separate Speed for Flying / Teleporting
-local walkSpeed = 60 -- Separate Speed for Walking on Field
-local speedLockEnabled = true -- 100% Stable WalkSpeed Lock
+local flySpeed = 75
+local walkSpeed = 60
+local speedLockEnabled = true
 
--- Complete List of 22 Bee Swarm Simulator Fields
+-- Feature Toggles
+local autoFarmActive = false
+local autoDigActive = false
+local autoSprinklerActive = false
+local antiAfkActive = true
+local noclipActive = false
+local autoCollectDispensers = false
+local autoAcceptQuests = false
+
+-- Complete List of BSS Fields
 local FieldPositions = {
     ["Sunflower Field"]     = Vector3.new(-208, 4, 184),
     ["Dandelion Field"]     = Vector3.new(-28, 4, 222),
@@ -2563,6 +2574,12 @@ local FieldPositions = {
     ["Ant Field"]           = Vector3.new(120, 30, 500),
     ["Robo Field"]          = Vector3.new(310, 150, 200),
 }
+
+local selectedField = "Pine Tree Forest"
+
+-- ============================================================
+-- UTILITY FUNCTIONS
+-- ============================================================
 
 -- Format Numbers cleanly (e.g. 1.23M, 4.56B, 7.89T)
 local function formatNumber(n)
@@ -2595,8 +2612,153 @@ end
 
 local initialHoney = getHoney()
 
+-- Auto-Equip Tool from Backpack (finds scoop/shovel/tool)
+local function autoEquipTool()
+    local char = LocalPlayer.Character
+    if not char then return end
+    if char:FindFirstChildOfClass("Tool") then return end -- Already holding a tool
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if not backpack then return end
+    for _, item in ipairs(backpack:GetChildren()) do
+        if item:IsA("Tool") then
+            item.Parent = char
+            print("[Berlin v0.1.51] Auto-equipped tool:", item.Name)
+            return
+        end
+    end
+end
+
+-- Fire Remote Events safely
+local function fireEvent(eventName, ...)
+    local events = ReplicatedStorage:FindFirstChild("Events")
+    if events and events:FindFirstChild(eventName) then
+        events[eventName]:FireServer(...)
+    end
+end
+
 -- ============================================================
--- CONSOLE LOGS WINDOW (SMALLER ELERIUM WINDOW WITH H & V SCROLL)
+-- STABLE SPEED LOCK ENGINE
+-- ============================================================
+local function enforceStableSpeed()
+    if not speedLockEnabled then return end
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum and hum.WalkSpeed ~= walkSpeed then
+        hum.WalkSpeed = walkSpeed
+    end
+end
+
+RunService.Heartbeat:Connect(enforceStableSpeed)
+RunService.Stepped:Connect(enforceStableSpeed)
+
+-- ============================================================
+-- HIVE FINDER & SMOOTH TRAVEL TO CONVERTER
+-- ============================================================
+local function getMyHive()
+    local hives = Workspace:FindFirstChild("Honeycombs") or Workspace:FindFirstChild("Hives")
+    if hives then
+        for _, hive in ipairs(hives:GetChildren()) do
+            local ownerVal = hive:FindFirstChild("Owner")
+            if ownerVal and (ownerVal.Value == LocalPlayer or (ownerVal.Value and tostring(ownerVal.Value) == LocalPlayer.Name)) then
+                return hive
+            end
+            for _, child in ipairs(hive:GetChildren()) do
+                if child.Name == "Owner" and (child.Value == LocalPlayer or (child.Value and tostring(child.Value) == LocalPlayer.Name)) then
+                    return hive
+                end
+            end
+        end
+    end
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if (obj.Name == "SpawnPos" or obj.Name == "Platform" or obj.Name == "Pad") and obj.Parent then
+            local owner = obj.Parent:FindFirstChild("Owner") or obj:FindFirstChild("Owner")
+            if owner and (owner.Value == LocalPlayer or (owner.Value and tostring(owner.Value) == LocalPlayer.Name)) then
+                return obj.Parent
+            end
+        end
+    end
+    return nil
+end
+
+local function travelToHiveConverter()
+    print("[Berlin v0.1.51] Traveling to Hive Converter at flySpeed:", flySpeed)
+    local hive = getMyHive()
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local targetCF = nil
+    if hive then
+        local platform = hive:FindFirstChild("Platform") or hive:FindFirstChild("Pad") or hive:FindFirstChild("Base") or hive:FindFirstChild("SpawnPos")
+        if platform then
+            targetCF = platform.CFrame * CFrame.new(0, 3.5, 0)
+        else
+            targetCF = hive:GetPivot() * CFrame.new(0, 3.5, -5)
+        end
+    else
+        for _, sp in ipairs(Workspace:GetDescendants()) do
+            if sp:IsA("SpawnLocation") and (sp.Name:find("Hive") or (sp.Parent and sp.Parent.Name:find("Hive"))) then
+                targetCF = sp.CFrame * CFrame.new(0, 3.5, 0)
+                break
+            end
+        end
+    end
+
+    if targetCF then
+        local dist = (hrp.Position - targetCF.Position).Magnitude
+        local travelTime = math.clamp(dist / math.max(flySpeed, 10), 0.2, 10)
+        hrp.Anchored = true
+        local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = targetCF})
+        tween:Play()
+        tween.Completed:Wait()
+        hrp.Anchored = false
+        print("[Berlin v0.1.51] Arrived at Hive!")
+        fireEvent("PlayerHiveCommand", "MakeHoney")
+        fireEvent("PlayerHiveCommand", "ConvertHoney")
+    else
+        warn("[Berlin v0.1.51] Hive not found!")
+    end
+end
+
+-- Place Sprinkler Builder in Field Center
+local function placeSprinklerInField(fieldName)
+    local center = FieldPositions[fieldName]
+    print("[Berlin v0.1.51] Placing Sprinkler in:", fieldName)
+    fireEvent("ToyEvent", "Sprinkler")
+    fireEvent("ToyEvent", "PlaceSprinkler")
+    fireEvent("ToyEvent", "Sprinkler Builder")
+    fireEvent("PlayerItemEvent", "Sprinkler")
+    fireEvent("PlayerItemEvent", "Sprinkler Builder")
+    fireEvent("PlayerItemEvent", "PlaceSprinkler")
+    pcall(function()
+        local events = ReplicatedStorage:FindFirstChild("Events")
+        local itemEvent = events and events:FindFirstChild("PlayerItemEvent")
+        if itemEvent and center then
+            itemEvent:FireServer("Sprinkler Builder", center)
+        end
+    end)
+end
+
+-- Collect All Dispensers
+local function collectAllDispensers()
+    local dispensers = {"Blueberry Dispenser", "Strawberry Dispenser", "Honey Dispenser", "Treat Dispenser", "Coconut Dispenser", "Glue Dispenser", "Free Ant Pass", "Wealth Clock"}
+    for _, name in ipairs(dispensers) do
+        fireEvent("ToyEvent", name)
+    end
+    print("[Berlin v0.1.51] Collected All Dispensers!")
+end
+
+-- Accept All Available Quests
+local function acceptAllQuests()
+    local npcs = {"Black Bear", "Brown Bear", "Panda Bear", "Science Bear", "Polar Bear", "Spirit Bear", "Dapper Bear", "Gifted Riley Bee", "Gifted Bucko Bee"}
+    for _, npc in ipairs(npcs) do
+        fireEvent("QuestEvent", "AcceptQuest", npc)
+    end
+    print("[Berlin v0.1.51] Accepted All Quests!")
+end
+
+-- ============================================================
+-- CONSOLE LOGS WINDOW
 -- ============================================================
 local consoleWindow = nil
 local consoleLogsFrame = nil
@@ -2609,16 +2771,13 @@ local function createConsoleWindow()
         return
     end
 
-    local mainGui = LocalPlayer.PlayerGui:FindFirstChild("Elerium") or LocalPlayer.PlayerGui:FindFirstChild("Berlin")
-    if not mainGui then
-        for _, child in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
-            if child:FindFirstChild("Window") or child.Name:find("Elerium") then
-                mainGui = child
-                break
-            end
+    local mainGui
+    for _, child in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
+        if child:FindFirstChild("Window") or child.Name:find("Elerium") or child.Name:find("imgui") then
+            mainGui = child
+            break
         end
     end
-
     if not mainGui then return end
 
     consoleWindow = Instance.new("Frame")
@@ -2648,7 +2807,6 @@ local function createConsoleWindow()
     barCorner.Parent = topBar
 
     local barTitle = Instance.new("TextLabel")
-    barTitle.Name = "Title"
     barTitle.Parent = topBar
     barTitle.Size = UDim2.new(1, -40, 1, 0)
     barTitle.Position = UDim2.new(0, 10, 0, 0)
@@ -2661,7 +2819,6 @@ local function createConsoleWindow()
     barTitle.ZIndex = 502
 
     local closeBtn = Instance.new("TextButton")
-    closeBtn.Name = "CloseButton"
     closeBtn.Parent = topBar
     closeBtn.Size = UDim2.new(0, 24, 0, 24)
     closeBtn.Position = UDim2.new(1, -26, 0.5, -12)
@@ -2675,7 +2832,7 @@ local function createConsoleWindow()
         consoleWindow.Visible = false
     end)
 
-    local dragging, dragInput, dragStart, startPos
+    local dragging, dragStart, startPos
     topBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
@@ -2688,7 +2845,7 @@ local function createConsoleWindow()
             dragging = false
         end
     end)
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
+    UserInputService.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
             consoleWindow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
@@ -2696,7 +2853,6 @@ local function createConsoleWindow()
     end)
 
     consoleLogsFrame = Instance.new("ScrollingFrame")
-    consoleLogsFrame.Name = "LogsScroll"
     consoleLogsFrame.Parent = consoleWindow
     consoleLogsFrame.Position = UDim2.new(0, 6, 0, 32)
     consoleLogsFrame.Size = UDim2.new(1, -12, 1, -38)
@@ -2707,9 +2863,8 @@ local function createConsoleWindow()
     consoleLogsFrame.ZIndex = 501
 
     consoleTextLabel = Instance.new("TextLabel")
-    consoleTextLabel.Name = "LogsText"
     consoleTextLabel.Parent = consoleLogsFrame
-    consoleTextLabel.Size = UDim2.new(1, 0, 1, 0)
+    consoleTextLabel.Size = UDim2.new(0, 1800, 0, 1000)
     consoleTextLabel.Position = UDim2.new(0, 5, 0, 5)
     consoleTextLabel.BackgroundTransparency = 1
     consoleTextLabel.Font = Enum.Font.Code
@@ -2717,7 +2872,8 @@ local function createConsoleWindow()
     consoleTextLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
     consoleTextLabel.TextXAlignment = Enum.TextXAlignment.Left
     consoleTextLabel.TextYAlignment = Enum.TextYAlignment.Top
-    consoleTextLabel.Text = "[Berlin Console] Output Logs initialized...\\n"
+    consoleTextLabel.TextWrapped = false
+    consoleTextLabel.Text = "[Berlin Console] Initialized..."
     consoleTextLabel.ZIndex = 502
 
     LogService.MessageOut:Connect(function(msg, messageType)
@@ -2728,168 +2884,22 @@ local function createConsoleWindow()
         elseif messageType == Enum.MessageType.MessageError then
             prefix = "[ERR]"
         end
-        local line = string.format("[%s] %s %s\\n", timestamp, prefix, tostring(msg))
+        local line = "[" .. timestamp .. "] " .. prefix .. " " .. tostring(msg)
         table.insert(consoleLogsList, line)
         if #consoleLogsList > 200 then
             table.remove(consoleLogsList, 1)
         end
-        consoleTextLabel.Text = table.concat(consoleLogsList, "")
+        consoleTextLabel.Text = table.concat(consoleLogsList, "\n")
         local lineCount = #consoleLogsList
-        consoleLogsFrame.CanvasSize = UDim2.new(0, 1800, 0, math.max(lineCount * 14 + 20, 240))
-        consoleLogsFrame.CanvasPosition = Vector2.new(0, consoleLogsFrame.CanvasSize.Y.Offset)
+        local canvasH = math.max(lineCount * 14 + 20, 240)
+        consoleTextLabel.Size = UDim2.new(0, 1800, 0, canvasH)
+        consoleLogsFrame.CanvasSize = UDim2.new(0, 1800, 0, canvasH)
+        consoleLogsFrame.CanvasPosition = Vector2.new(0, canvasH)
     end)
 end
 
 -- ============================================================
--- STABLE SPEED LOCK ENGINE (PREVENTS BSS BUFFS FROM RESETTING SPEED)
--- ============================================================
-local function enforceStableSpeed()
-    if not speedLockEnabled then return end
-    local char = LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum and hum.WalkSpeed ~= walkSpeed then
-        hum.WalkSpeed = walkSpeed
-    end
-end
-
-RunService.Heartbeat:Connect(enforceStableSpeed)
-RunService.Stepped:Connect(enforceStableSpeed)
-
--- ============================================================
--- HELPER FUNCTIONS: HIVE FINDER & SMOOTH TRAVEL TO CONVERTER
--- ============================================================
-
--- Find Player's Exact Hive Model
-local function getMyHive()
-    local hives = Workspace:FindFirstChild("Honeycombs") or Workspace:FindFirstChild("Hives")
-    if hives then
-        for _, hive in ipairs(hives:GetChildren()) do
-            local ownerVal = hive:FindFirstChild("Owner")
-            if ownerVal and (ownerVal.Value == LocalPlayer or (ownerVal.Value and tostring(ownerVal.Value) == LocalPlayer.Name)) then
-                return hive
-            end
-            for _, child in ipairs(hive:GetChildren()) do
-                if child.Name == "Owner" and (child.Value == LocalPlayer or (child.Value and tostring(child.Value) == LocalPlayer.Name)) then
-                    return hive
-                end
-            end
-        end
-    end
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if (obj.Name == "SpawnPos" or obj.Name == "Platform" or obj.Name == "Pad") and obj.Parent then
-            local owner = obj.Parent:FindFirstChild("Owner") or obj:FindFirstChild("Owner")
-            if owner and (owner.Value == LocalPlayer or (owner.Value and tostring(owner.Value) == LocalPlayer.Name)) then
-                return obj.Parent
-            end
-        end
-    end
-    return nil
-end
-
--- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
-local function travelToHiveConverter()
-    print("[Berlin v0.1.50] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
-    local hive = getMyHive()
-    local char = LocalPlayer.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-
-    if not hrp then return end
-
-    local targetCF = nil
-    if hive then
-        local platform = hive:FindFirstChild("Platform") or hive:FindFirstChild("Pad") or hive:FindFirstChild("Base") or hive:FindFirstChild("SpawnPos")
-        if platform then
-            targetCF = platform.CFrame * CFrame.new(0, 3.5, 0)
-        else
-            targetCF = hive:GetPivot() * CFrame.new(0, 3.5, -5)
-        end
-    else
-        for _, spawnPoint in ipairs(Workspace:GetDescendants()) do
-            if spawnPoint:IsA("SpawnLocation") and (spawnPoint.Name:find("Hive") or (spawnPoint.Parent and spawnPoint.Parent.Name:find("Hive"))) then
-                targetCF = spawnPoint.CFrame * CFrame.new(0, 3.5, 0)
-                break
-            end
-        end
-    end
-
-    if targetCF then
-        local distance = (hrp.Position - targetCF.Position).Magnitude
-        local travelTime = math.clamp(distance / math.max(flySpeed, 10), 0.2, 10)
-
-        hrp.Anchored = true
-        local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = targetCF})
-        tween:Play()
-        tween.Completed:Wait()
-        hrp.Anchored = false
-        print("[Berlin v0.1.50] Arrived at Hive Converter Pad!")
-
-        local events = ReplicatedStorage:FindFirstChild("Events")
-        if events and events:FindFirstChild("PlayerHiveCommand") then
-            events.PlayerHiveCommand:FireServer("MakeHoney")
-            events.PlayerHiveCommand:FireServer("ConvertHoney")
-        end
-    else
-        warn("[Berlin v0.1.50] Hive not found! Please claim a hive first.")
-    end
-end
-
--- Place Sprinkler from Inventory ("Sprinkler Builder") in Field Center
-local function placeSprinklerInField(fieldName)
-    local center = FieldPositions[fieldName]
-    local events = ReplicatedStorage:FindFirstChild("Events")
-    
-    print("[Berlin v0.1.50] Placing Sprinkler Builder in Center of Field:", fieldName)
-    
-    if events then
-        if events:FindFirstChild("ToyEvent") then
-            events.ToyEvent:FireServer("Sprinkler")
-            events.ToyEvent:FireServer("PlaceSprinkler")
-            events.ToyEvent:FireServer("Sprinkler Builder")
-        end
-        if events:FindFirstChild("PlayerItemEvent") then
-            events.PlayerItemEvent:FireServer("Sprinkler")
-            events.PlayerItemEvent:FireServer("Sprinkler Builder")
-            events.PlayerItemEvent:FireServer("PlaceSprinkler")
-        end
-    end
-
-    pcall(function()
-        local itemEvent = events and events:FindFirstChild("PlayerItemEvent")
-        if itemEvent and center then
-            itemEvent:FireServer("Sprinkler Builder", center)
-        end
-    end)
-end
-
--- Fire Item Buff RemoteEvent
-local function useInventoryBuff(itemName)
-    local events = ReplicatedStorage:FindFirstChild("Events")
-    if events and events:FindFirstChild("PlayerItemEvent") then
-        events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.50] Used Buff:", itemName)
-    end
-end
-
--- Fire Dispenser / Toy RemoteEvent
-local function collectDispenser(toyName)
-    local events = ReplicatedStorage:FindFirstChild("Events")
-    if events and events:FindFirstChild("ToyEvent") then
-        events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.50] Collected Dispenser:", toyName)
-    end
-end
-
--- Fire Quest RemoteEvent
-local function takeQuest(npcName)
-    local events = ReplicatedStorage:FindFirstChild("Events")
-    if events and events:FindFirstChild("QuestEvent") then
-        events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.50] Took Quest from:", npcName)
-    end
-end
-
--- ============================================================
--- HOME TAB (WITH LIVE SESSION HONEY & HONEY/HOUR STATS)
+-- HOME TAB
 -- ============================================================
 local homeFolder = homeTab:AddFolder("Home Overview", true, "left")
 
@@ -2900,15 +2910,14 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0/h")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.50] Stop Everything:", state)
+    print("[Berlin v0.1.51] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.50] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
--- Live Timers & Session Honey Stats Loop
+-- Live Timers & Session Honey Stats
 task.spawn(function()
     while task.wait(1) do
         local elapsed = os.time() - startTime
@@ -2923,7 +2932,6 @@ task.spawn(function()
         local ss = sUptime % 60
         if serverUptimeLbl then serverUptimeLbl.Text = string.format("Server Uptime: %02d:%02d:%02d", sh, sm, ss) end
 
-        -- Calculate Session Honey & Honey per Hour
         local currentHoney = getHoney()
         local sessionHoney = math.max(currentHoney - initialHoney, 0)
         local hph = (elapsed > 5) and math.floor((sessionHoney / elapsed) * 3600) or 0
@@ -2934,15 +2942,10 @@ task.spawn(function()
 end)
 
 -- ============================================================
--- FARMING TAB (2-COLUMN COLLAPSIBLE CARDS MATCHING ATLAS V1.0)
+-- FARMING TAB
 -- ============================================================
 
-local selectedField = "Pine Tree Forest"
-local autoFarmActive = false
-local autoDigActive = false
-local autoSprinklerActive = false
-
--- LEFT COLUMN (COLUMN 1)
+-- LEFT COLUMN
 local farmFolder = farmTab:AddFolder("Farming", true, "left")
 
 local fieldList = {}
@@ -2953,7 +2956,7 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.50] Selected Field:", selectedField)
+    print("[Berlin v0.1.51] Selected Field:", selectedField)
     if autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2961,7 +2964,7 @@ end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.50] Autofarm set to:", state)
+    print("[Berlin v0.1.51] Autofarm:", state)
     if state and autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2969,7 +2972,7 @@ end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
     autoSprinklerActive = state
-    print("[Berlin v0.1.50] Auto Sprinkler set to:", state)
+    print("[Berlin v0.1.51] Auto Sprinkler:", state)
     if state then
         placeSprinklerInField(selectedField)
     end
@@ -2977,7 +2980,7 @@ end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
     autoDigActive = state
-    print("[Berlin v0.1.50] Auto Dig set to:", state)
+    print("[Berlin v0.1.51] Auto Dig:", state)
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
@@ -2990,7 +2993,7 @@ farmTab:AddFolder("Guiding Star Settings", false, "left")
 farmTab:AddFolder("Natro Patterns", false, "left")
 farmTab:AddFolder("Face Settings", false, "left")
 
--- RIGHT COLUMN (COLUMN 2)
+-- RIGHT COLUMN
 local sproutFolder = farmTab:AddFolder("Sprout Settings", true, "right")
 sproutFolder:AddSwitch("Farm Sprouts", function(state) end)
 sproutFolder:AddSwitch("Auto Plant Sprouts", function(state) end)
@@ -3005,49 +3008,162 @@ farmTab:AddFolder("Robo Bear Challenge", false, "right")
 farmTab:AddFolder("Follow Player", false, "right")
 
 -- ============================================================
--- OTHER TABS: COMBAT, TOYS, CONFIG, DEBUG
+-- COMBAT TAB (Anti-AFK, Noclip, Anti-Death)
 -- ============================================================
+local combatFolder = combatTab:AddFolder("Protection", true, "left")
 
--- TOYS TAB (DISPENSERS)
-local dispenserFolder = toysTab:AddFolder("Dispensers", true, "left")
-dispenserFolder:AddButton("Collect All Dispensers", function()
-    collectDispenser("Blueberry Dispenser")
-    collectDispenser("Strawberry Dispenser")
-    collectDispenser("Honey Dispenser")
-    collectDispenser("Treat Dispenser")
-    collectDispenser("Coconut Dispenser")
-    collectDispenser("Glue Dispenser")
-    collectDispenser("Free Ant Pass")
-    collectDispenser("Wealth Clock")
+combatFolder:AddSwitch("Anti-AFK", function(state)
+    antiAfkActive = state
+    print("[Berlin v0.1.51] Anti-AFK:", state)
 end)
 
+combatFolder:AddSwitch("Noclip", function(state)
+    noclipActive = state
+    print("[Berlin v0.1.51] Noclip:", state)
+end)
+
+combatFolder:AddButton("Respawn Character", function()
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.Health = 0
+        task.wait(3)
+        print("[Berlin v0.1.51] Respawned!")
+    end
+end)
+
+local mobFolder = combatTab:AddFolder("Mob Settings", false, "right")
+mobFolder:AddSwitch("Auto Attack Mobs", function(state) end)
+mobFolder:AddSwitch("Avoid Dangerous Mobs", function(state) end)
+
+-- Anti-AFK Background Loop (keyboard-only, NO mouse interaction)
+task.spawn(function()
+    while task.wait(120) do
+        if antiAfkActive then
+            -- Method 1: Simulate tiny character jump to reset AFK timer
+            pcall(function()
+                local char = LocalPlayer.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum.Jump = true
+                end
+            end)
+            -- Method 2: Dismiss any AFK kick dialogs
+            pcall(function()
+                local pgui = LocalPlayer:FindFirstChild("PlayerGui")
+                if pgui then
+                    for _, gui in ipairs(pgui:GetDescendants()) do
+                        if gui:IsA("TextButton") and (gui.Text:find("OK") or gui.Text:find("Ok") or gui.Text:find("ok")) then
+                            gui:FindFirstAncestorWhichIsA("ScreenGui").Enabled = false
+                        end
+                    end
+                end
+            end)
+            print("[Berlin v0.1.51] Anti-AFK pulse sent")
+        end
+    end
+end)
+
+-- Noclip Background Loop
+task.spawn(function()
+    RunService.Stepped:Connect(function()
+        if noclipActive then
+            local char = LocalPlayer.Character
+            if char then
+                for _, part in ipairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+-- ============================================================
 -- QUESTS TAB
+-- ============================================================
 local questFolder = questsTab:AddFolder("Quests", true, "left")
+
 questFolder:AddButton("Take All Available Quests", function()
-    takeQuest("Black Bear")
-    takeQuest("Brown Bear")
-    takeQuest("Panda Bear")
-    takeQuest("Science Bear")
-    takeQuest("Polar Bear")
+    acceptAllQuests()
 end)
 
--- CONFIG TAB (SEPARATE FLY AND WALK SPEED SLIDERS)
+questFolder:AddSwitch("Auto Accept Quests (5 min)", function(state)
+    autoAcceptQuests = state
+    print("[Berlin v0.1.51] Auto Accept Quests:", state)
+end)
+
+-- Auto Quests Timer
+task.spawn(function()
+    while task.wait(300) do
+        if not stopEverything and autoAcceptQuests then
+            acceptAllQuests()
+        end
+    end
+end)
+
+-- ============================================================
+-- PLANTERS TAB
+-- ============================================================
+local planterFolder = plantersTab:AddFolder("Planter Controls", true, "left")
+
+planterFolder:AddButton("Place Planter in Field", function()
+    fireEvent("PlayerItemEvent", "PlacePlanter")
+    fireEvent("ToyEvent", "PlacePlanter")
+    print("[Berlin v0.1.51] Placed Planter in current field")
+end)
+
+planterFolder:AddButton("Harvest All Planters", function()
+    fireEvent("PlayerItemEvent", "HarvestPlanter")
+    fireEvent("ToyEvent", "HarvestPlanter")
+    print("[Berlin v0.1.51] Harvested All Planters")
+end)
+
+local planterInfoFolder = plantersTab:AddFolder("Planter Info", false, "right")
+planterInfoFolder:AddLabel("Planters auto-harvest when full")
+planterInfoFolder:AddLabel("Place while standing in field")
+
+-- ============================================================
+-- TOYS TAB (DISPENSERS WITH AUTO TIMER)
+-- ============================================================
+local dispenserFolder = toysTab:AddFolder("Dispensers", true, "left")
+
+dispenserFolder:AddButton("Collect All Dispensers", function()
+    collectAllDispensers()
+end)
+
+dispenserFolder:AddSwitch("Auto Collect (10 min)", function(state)
+    autoCollectDispensers = state
+    print("[Berlin v0.1.51] Auto Collect Dispensers:", state)
+end)
+
+-- Auto Dispensers Timer
+task.spawn(function()
+    while task.wait(600) do
+        if not stopEverything and autoCollectDispensers then
+            collectAllDispensers()
+        end
+    end
+end)
+
+-- ============================================================
+-- CONFIG TAB
+-- ============================================================
 local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSwitch("Stable Speed Lock", function(state)
     speedLockEnabled = state
-    print("[Berlin v0.1.50] Stable Speed Lock:", state)
+    print("[Berlin v0.1.51] Stable Speed Lock:", state)
 end)
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.50] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("Walk Speed", function(val)
     walkSpeed = val
     enforceStableSpeed()
-    print("[Berlin v0.1.50] Walk Speed set to:", val)
 end, {min = 16, max = 300, readonly = false})
 
 configFolder:AddSlider("JumpPower", function(val)
@@ -3057,7 +3173,7 @@ configFolder:AddSlider("JumpPower", function(val)
 end, {min = 50, max = 300, readonly = false})
 
 -- ============================================================
--- AUTOMATED UI DIAGNOSTICS & FLOATING CONSOLE WINDOW IN DEBUG TAB
+-- DEBUG TAB
 -- ============================================================
 local debugFolder = debugTab:AddFolder("Console & Diagnostics", true, "left")
 
@@ -3065,83 +3181,47 @@ debugFolder:AddButton("Open Console Logs Window", function()
     createConsoleWindow()
 end)
 
-local function runUIDiagnostics()
-    print("==================================================")
-    print("[Berlin Debug] RUNNING AUTOMATED UI DIAGNOSTICS...")
-    print("==================================================")
-    
-    local gui = LocalPlayer.PlayerGui:FindFirstChild("Elerium") or LocalPlayer.PlayerGui:FindFirstChild("Berlin")
-    if not gui then
-        local foundAny = false
-        for _, child in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
-            if child:FindFirstChild("Window") or child.Name:find("Elerium") then
-                gui = child
-                foundAny = true
-                break
-            end
-        end
-        if not foundAny then
-            warn("[Berlin Debug] ❌ PlayerGui UI Container not found!")
-            return
-        end
-    end
-
-    print("[Berlin Debug] ✅ Main ScreenGui Container Found:", gui.Name)
-    local windowFrame = gui:FindFirstChild("Window", true)
-    if windowFrame then
-        print("[Berlin Debug] ✅ Window Frame Found. Size:", tostring(windowFrame.Size))
-    end
-
-    local btnCount = 0
-    local dropdownCount = 0
-    local folderCount = 0
-
-    for _, desc in ipairs(gui:GetDescendants()) do
-        if desc:IsA("TextButton") then
-            if desc.Name:find("Button") then
-                btnCount = btnCount + 1
-            elseif desc.Name:find("Dropdown") then
-                dropdownCount = dropdownCount + 1
-            end
-        elseif desc:IsA("Frame") and desc.Name:find("Folder") then
-            folderCount = folderCount + 1
-        end
-    end
-
-    print("--------------------------------------------------")
-    print(string.format("[Berlin Debug] SUMMARY: %d Folders, %d Buttons, %d Dropdowns Diagnostic Complete!", folderCount, btnCount, dropdownCount))
-    print("[Berlin Debug] ✅ ALL UI ELEMENTS VERIFIED HEALTHY!")
-    print("==================================================")
-end
-
 debugFolder:AddButton("Run UI Diagnostic Test", function()
-    runUIDiagnostics()
+    print("==================================================")
+    print("[Berlin Debug] RUNNING UI DIAGNOSTICS...")
+    local gui
+    for _, child in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
+        if child:FindFirstChild("Window") or child.Name:find("Elerium") or child.Name:find("imgui") then
+            gui = child
+            break
+        end
+    end
+    if gui then
+        print("[Berlin Debug] UI Container:", gui.Name)
+        local btnCount, folderCount = 0, 0
+        for _, desc in ipairs(gui:GetDescendants()) do
+            if desc:IsA("TextButton") then btnCount = btnCount + 1 end
+            if desc:IsA("Frame") and desc.Name:find("Folder") then folderCount = folderCount + 1 end
+        end
+        print(string.format("[Berlin Debug] %d Folders, %d Buttons", folderCount, btnCount))
+    else
+        warn("[Berlin Debug] UI not found!")
+    end
+    print("==================================================")
 end)
 
 -- ============================================================
--- LOOK-AHEAD TOKEN CHAIN PATHING ENGINE
+-- TOKEN CHAIN PATHING ENGINE
 -- ============================================================
 local function isTokenReachable(token, hrpPos, playerSpeed)
-    if not token or not token.Parent or not token:IsA("BasePart") then
-        return false
-    end
+    if not token or not token.Parent or not token:IsA("BasePart") then return false end
     local dist = (hrpPos - token.Position).Magnitude
-    
     local spawnTime = token:GetAttribute("SpawnTime") or (token:FindFirstChild("SpawnTime") and token.SpawnTime.Value)
     if spawnTime then
         local age = os.clock() - spawnTime
         local remainingLife = math.max(7 - age, 0)
         local timeToReach = dist / math.max(playerSpeed, 16)
-        if timeToReach >= remainingLife then
-            return false
-        end
+        if timeToReach >= remainingLife then return false end
     end
-
     local maxReachDist = math.clamp(playerSpeed * 2.5, 45, 130)
     return dist <= maxReachDist
 end
 
--- Nearest-Neighbor Look-Ahead Token Chain Builder
 local function getOptimizedTokenChain(hrpPos, fieldCenter, playerSpeed)
     local collectibles = Workspace:FindFirstChild("Collectibles") or Workspace:FindFirstChild("Tokens")
     if not collectibles then return {} end
@@ -3158,53 +3238,60 @@ local function getOptimizedTokenChain(hrpPos, fieldCenter, playerSpeed)
     local chain = {}
     local currPos = hrpPos
     local visited = {}
-
     for i = 1, math.min(#validTokens, 8) do
-        local bestToken = nil
-        local minDist = 9999
+        local bestToken, minDist = nil, 9999
         for _, token in ipairs(validTokens) do
             if not visited[token] then
                 local d = (currPos - token.Position).Magnitude
-                if d < minDist then
-                    minDist = d
-                    bestToken = token
-                end
+                if d < minDist then minDist = d; bestToken = token end
             end
         end
         if bestToken then
             visited[bestToken] = true
             table.insert(chain, bestToken)
             currPos = bestToken.Position
-        else
-            break
-        end
+        else break end
     end
-
     return chain
 end
 
--- Dedicated Background Event & Remote Dig Engine (STRICT: ONLY RUNS IF AUTO DIG IS ENABLED)
+-- ============================================================
+-- AUTO DIG ENGINE (STRICT: ONLY IF autoDigActive, WITH AUTO-EQUIP)
+-- ============================================================
 task.spawn(function()
     while task.wait(0.06) do
         if not stopEverything and autoDigActive then
+            -- Auto-equip tool from backpack if none held
+            autoEquipTool()
+
             local char = LocalPlayer.Character
             local tool = char and char:FindFirstChildOfClass("Tool")
 
-            -- Direct Tool Activation (independent of mouse cursor position)
+            -- Direct Tool Activation (independent of cursor)
             if tool then
                 tool:Activate()
             end
 
-            -- Background Event & Remote Digging (independent of cursor)
-            local events = ReplicatedStorage:FindFirstChild("Events")
-            if events and events:FindFirstChild("ToolCollect") then
-                events.ToolCollect:FireServer()
-            end
+            -- Background Remote Digging
+            fireEvent("ToolCollect")
         end
     end
 end)
 
--- Main Look-Ahead Non-Stop Movement & Token Queue Loop
+-- ============================================================
+-- AUTO SPRINKLER TIMER (Re-places every 30 seconds)
+-- ============================================================
+task.spawn(function()
+    while task.wait(30) do
+        if not stopEverything and autoSprinklerActive then
+            placeSprinklerInField(selectedField)
+        end
+    end
+end)
+
+-- ============================================================
+-- MAIN LOOK-AHEAD MOVEMENT & TOKEN QUEUE LOOP
+-- ============================================================
 task.spawn(function()
     local angle = 0
     while task.wait(0.05) do
@@ -3217,7 +3304,7 @@ task.spawn(function()
                 local center = FieldPositions[selectedField] or Vector3.new(0, 4, 0)
                 local distFromField = (hrp.Position - center).Magnitude
 
-                -- If player is far off field (>120 studs), smoothly travel to field first
+                -- Fly to field if too far
                 if distFromField > 120 then
                     local travelTime = math.clamp(distFromField / math.max(flySpeed, 10), 0.5, 6)
                     hrp.Anchored = true
@@ -3225,37 +3312,31 @@ task.spawn(function()
                     tween:Play()
                     tween.Completed:Wait()
                     hrp.Anchored = false
-
                     if autoSprinklerActive then
                         placeSprinklerInField(selectedField)
                     end
                 end
 
-                -- Compute Multi-Step Look-Ahead Token Chain
+                -- Token chain pathing
                 local chain = getOptimizedTokenChain(hrp.Position, center, walkSpeed)
-
                 if #chain > 0 then
-                    local currentTarget = chain[1]
-                    local distToFirst = (hrp.Position - currentTarget.Position).Magnitude
-
-                    -- Look-Ahead Steering: if close to 1st token (<4.5 studs) and 2nd token exists, seamlessly steer towards 2nd token!
+                    local distToFirst = (hrp.Position - chain[1].Position).Magnitude
                     if #chain >= 2 and distToFirst < 4.5 then
                         hum:MoveTo(chain[2].Position)
                     else
-                        hum:MoveTo(currentTarget.Position)
+                        hum:MoveTo(chain[1].Position)
                     end
                 else
-                    -- Smooth natural patrol without sudden stops
                     angle = angle + 0.08
                     local patrolPoint = center + Vector3.new(math.cos(angle) * 20, 0, math.sin(angle) * 20)
                     hum:MoveTo(patrolPoint)
                 end
 
-                -- Auto Convert check if Pollen Container is Full
+                -- Auto convert when pollen full
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
-                    print("[Berlin v0.1.50] Pollen Full! Traveling smoothly to Hive...")
+                    print("[Berlin v0.1.51] Pollen Full! Traveling to Hive...")
                     travelToHiveConverter()
                     task.wait(3)
                 end
@@ -3263,3 +3344,7 @@ task.spawn(function()
         end
     end
 end)
+
+print("==========================================")
+print("[Berlin v0.1.51] Loaded! RightShift = toggle")
+print("==========================================")
