@@ -1,6 +1,6 @@
 -- ============================================================
--- BERLIN V0.1.47 | BEE SWARM SIMULATOR
--- MAIN SINGLE FILE LOADER - WITH CONSOLE LOGS WINDOW & DEBOUNCED SWITCHES
+-- BERLIN V0.1.48 | BEE SWARM SIMULATOR
+-- MAIN SINGLE FILE LOADER - WITH CONTINUOUS HOLD DIG & CENTER SPRINKLER BUILDER
 -- ============================================================
 
 local library = (function()
@@ -2497,7 +2497,7 @@ return library
 end)()
 
 -- Create Red & Grey Elerium v2 Window (680x370 Exact Compact Scale)
-local window = library:AddWindow("Berlin v0.1.47", {
+local window = library:AddWindow("Berlin v0.1.48", {
     main_color = Color3.fromRGB(180, 30, 40), -- Crimson Red Accent
     min_size = Vector2.new(680, 370),
     toggle_key = Enum.KeyCode.RightShift,
@@ -2506,7 +2506,7 @@ local window = library:AddWindow("Berlin v0.1.47", {
 
 -- Add Search Field at top of Sidebar
 local searchInput = window:AddSearchBox(function(query)
-    print("[Berlin v0.1.47] Searching for:", query)
+    print("[Berlin v0.1.48] Searching for:", query)
 end)
 
 -- Add Vertical Sidebar Tabs with User's Exact Lucide Icons via Elerium
@@ -2622,7 +2622,6 @@ local function createConsoleWindow()
 
     if not mainGui then return end
 
-    -- Floating Console Window (Slightly smaller: 520x280)
     consoleWindow = Instance.new("Frame")
     consoleWindow.Name = "ConsoleWindow"
     consoleWindow.Parent = mainGui
@@ -2637,7 +2636,6 @@ local function createConsoleWindow()
     winCorner.CornerRadius = UDim.new(0, 6)
     winCorner.Parent = consoleWindow
 
-    -- Top Crimson Bar
     local topBar = Instance.new("Frame")
     topBar.Name = "TopBar"
     topBar.Parent = consoleWindow
@@ -2663,7 +2661,6 @@ local function createConsoleWindow()
     barTitle.Text = "Berlin Console Logs"
     barTitle.ZIndex = 502
 
-    -- Close Button
     local closeBtn = Instance.new("TextButton")
     closeBtn.Name = "CloseButton"
     closeBtn.Parent = topBar
@@ -2679,7 +2676,6 @@ local function createConsoleWindow()
         consoleWindow.Visible = false
     end)
 
-    -- Make Console Window Draggable
     local dragging, dragInput, dragStart, startPos
     topBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -2700,7 +2696,6 @@ local function createConsoleWindow()
         end
     end)
 
-    -- ScrollingFrame supporting BOTH Horizontal & Vertical Scrolling
     consoleLogsFrame = Instance.new("ScrollingFrame")
     consoleLogsFrame.Name = "LogsScroll"
     consoleLogsFrame.Parent = consoleWindow
@@ -2709,7 +2704,7 @@ local function createConsoleWindow()
     consoleLogsFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 16)
     consoleLogsFrame.BorderSizePixel = 0
     consoleLogsFrame.ScrollBarThickness = 6
-    consoleLogsFrame.CanvasSize = UDim2.new(0, 1600, 0, 1000) -- Expanded Width & Height for Scrolling
+    consoleLogsFrame.CanvasSize = UDim2.new(0, 1600, 0, 1000)
     consoleLogsFrame.ZIndex = 501
 
     consoleTextLabel = Instance.new("TextLabel")
@@ -2727,7 +2722,6 @@ local function createConsoleWindow()
 "
     consoleTextLabel.ZIndex = 502
 
-    -- Hook LogService MessageOut
     LogService.MessageOut:Connect(function(msg, messageType)
         local timestamp = os.date("%H:%M:%S")
         local prefix = "[INFO]"
@@ -2797,7 +2791,7 @@ end
 
 -- Smooth Movement (Walk/Fly) Directly to Player's Hive Converting Pad
 local function travelToHiveConverter()
-    print("[Berlin v0.1.47] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
+    print("[Berlin v0.1.48] Traveling Smoothly to My Hive Converter Pad at flySpeed:", flySpeed)
     local hive = getMyHive()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -2830,7 +2824,7 @@ local function travelToHiveConverter()
         tween:Play()
         tween.Completed:Wait()
         hrp.Anchored = false
-        print("[Berlin v0.1.47] Arrived at Hive Converter Pad!")
+        print("[Berlin v0.1.48] Arrived at Hive Converter Pad!")
 
         local events = ReplicatedStorage:FindFirstChild("Events")
         if events and events:FindFirstChild("PlayerHiveCommand") then
@@ -2838,23 +2832,38 @@ local function travelToHiveConverter()
             events.PlayerHiveCommand:FireServer("ConvertHoney")
         end
     else
-        warn("[Berlin v0.1.47] Hive not found! Please claim a hive first.")
+        warn("[Berlin v0.1.48] Hive not found! Please claim a hive first.")
     end
 end
 
--- Place Sprinkler from Inventory in Field Center
+-- Place Sprinkler from Inventory ("Sprinkler Builder") in Field Center
 local function placeSprinklerInField(fieldName)
+    local center = FieldPositions[fieldName]
     local events = ReplicatedStorage:FindFirstChild("Events")
+    
+    print("[Berlin v0.1.48] Placing Sprinkler Builder in Center of Field:", fieldName)
+    
+    -- Method 1: Place via ToyEvent / PlayerItemEvent Remotes
     if events then
         if events:FindFirstChild("ToyEvent") then
             events.ToyEvent:FireServer("Sprinkler")
             events.ToyEvent:FireServer("PlaceSprinkler")
+            events.ToyEvent:FireServer("Sprinkler Builder")
         end
         if events:FindFirstChild("PlayerItemEvent") then
             events.PlayerItemEvent:FireServer("Sprinkler")
+            events.PlayerItemEvent:FireServer("Sprinkler Builder")
+            events.PlayerItemEvent:FireServer("PlaceSprinkler")
         end
     end
-    print("[Berlin v0.1.47] Placed Sprinkler in Center of Field:", fieldName)
+
+    -- Method 2: Fire Tool/Item Remote with Center Position
+    pcall(function()
+        local itemEvent = events and events:FindFirstChild("PlayerItemEvent")
+        if itemEvent and center then
+            itemEvent:FireServer("Sprinkler Builder", center)
+        end
+    end)
 end
 
 -- Fire Item Buff RemoteEvent
@@ -2862,7 +2871,7 @@ local function useInventoryBuff(itemName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("PlayerItemEvent") then
         events.PlayerItemEvent:FireServer(itemName)
-        print("[Berlin v0.1.47] Used Buff:", itemName)
+        print("[Berlin v0.1.48] Used Buff:", itemName)
     end
 end
 
@@ -2871,7 +2880,7 @@ local function collectDispenser(toyName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("ToyEvent") then
         events.ToyEvent:FireServer(toyName)
-        print("[Berlin v0.1.47] Collected Dispenser:", toyName)
+        print("[Berlin v0.1.48] Collected Dispenser:", toyName)
     end
 end
 
@@ -2880,7 +2889,7 @@ local function takeQuest(npcName)
     local events = ReplicatedStorage:FindFirstChild("Events")
     if events and events:FindFirstChild("QuestEvent") then
         events.QuestEvent:FireServer("AcceptQuest", npcName)
-        print("[Berlin v0.1.47] Took Quest from:", npcName)
+        print("[Berlin v0.1.48] Took Quest from:", npcName)
     end
 end
 
@@ -2896,11 +2905,11 @@ local hphLbl = homeFolder:AddLabel("Honey per Hour: 0/h")
 
 homeFolder:AddSwitch("Stop Everything", function(state)
     stopEverything = state
-    print("[Berlin v0.1.47] Stop Everything:", state)
+    print("[Berlin v0.1.48] Stop Everything:", state)
 end)
 
 homeFolder:AddButton("Fly to My Hive Converter", function()
-    print("[Berlin v0.1.47] Traveling to Hive Converter...")
+    print("[Berlin v0.1.48] Traveling to Hive Converter...")
     travelToHiveConverter()
 end)
 
@@ -2949,7 +2958,7 @@ table.sort(fieldList)
 
 farmFolder:AddDropdown("Field", function(selected)
     selectedField = selected
-    print("[Berlin v0.1.47] Selected Field:", selectedField)
+    print("[Berlin v0.1.48] Selected Field:", selectedField)
     if autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2957,7 +2966,7 @@ end, fieldList)
 
 farmFolder:AddSwitch("Autofarm", function(state)
     autoFarmActive = state
-    print("[Berlin v0.1.47] Autofarm set to:", state)
+    print("[Berlin v0.1.48] Autofarm set to:", state)
     if state and autoSprinklerActive then
         placeSprinklerInField(selectedField)
     end
@@ -2965,7 +2974,7 @@ end)
 
 farmFolder:AddSwitch("Auto Sprinkler", function(state)
     autoSprinklerActive = state
-    print("[Berlin v0.1.47] Auto Sprinkler set to:", state)
+    print("[Berlin v0.1.48] Auto Sprinkler set to:", state)
     if state then
         placeSprinklerInField(selectedField)
     end
@@ -2973,7 +2982,7 @@ end)
 
 farmFolder:AddSwitch("Auto Dig", function(state)
     autoDigActive = state
-    print("[Berlin v0.1.47] Auto Dig set to:", state)
+    print("[Berlin v0.1.48] Auto Dig set to:", state)
 end)
 
 farmTab:AddFolder("Farm Settings", false, "left")
@@ -3032,18 +3041,18 @@ local configFolder = configTab:AddFolder("Movement Controls", true, "left")
 
 configFolder:AddSwitch("Stable Speed Lock", function(state)
     speedLockEnabled = state
-    print("[Berlin v0.1.47] Stable Speed Lock:", state)
+    print("[Berlin v0.1.48] Stable Speed Lock:", state)
 end)
 
 configFolder:AddSlider("Fly Speed", function(val)
     flySpeed = val
-    print("[Berlin v0.1.47] Fly Speed set to:", val)
+    print("[Berlin v0.1.48] Fly Speed set to:", val)
 end, {min = 10, max = 300, readonly = false})
 
 configFolder:AddSlider("Walk Speed", function(val)
     walkSpeed = val
     enforceStableSpeed()
-    print("[Berlin v0.1.47] Walk Speed set to:", val)
+    print("[Berlin v0.1.48] Walk Speed set to:", val)
 end, {min = 16, max = 300, readonly = false})
 
 configFolder:AddSlider("JumpPower", function(val)
@@ -3179,31 +3188,29 @@ local function getOptimizedTokenChain(hrpPos, fieldCenter, playerSpeed)
     return chain
 end
 
--- Dedicated Multi-Method Auto Dig Loop (Click Screen & Swing Tool)
+-- Dedicated Continuous Mouse Hold Dig Engine
 task.spawn(function()
-    while task.wait(0.08) do
+    while task.wait(0.04) do
         if not stopEverything and (autoDigActive or autoFarmActive) then
             local char = LocalPlayer.Character
             local tool = char and char:FindFirstChildOfClass("Tool")
 
-            -- Method 1: Swing Equipped Scoop / Tool
+            -- Method 1: Continuous Tool Hold Activation
             if tool then
                 tool:Activate()
             end
 
-            -- Method 2: VirtualUser Screen Click
+            -- Method 2: VirtualUser Continuous Hold Mouse Button 1 Down
             pcall(function()
-                VirtualUser:ClickButton1(Vector2.new(500, 500))
+                VirtualUser:Button1Down(Vector2.new(500, 500))
             end)
 
-            -- Method 3: Executor Screen Click / Mouse Click
+            -- Method 3: Executor mouse1press Hold Simulation
             pcall(function()
-                if mouse1click then
-                    mouse1click()
-                elseif mouse1press and mouse1release then
+                if mouse1press then
                     mouse1press()
-                    task.wait()
-                    mouse1release()
+                elseif mouse1click then
+                    mouse1click()
                 end
             end)
 
@@ -3212,6 +3219,14 @@ task.spawn(function()
             if events and events:FindFirstChild("ToolCollect") then
                 events.ToolCollect:FireServer()
             end
+        else
+            -- Release Mouse Button 1 when AutoDig is inactive
+            pcall(function()
+                VirtualUser:Button1Up(Vector2.new(500, 500))
+                if mouse1release then
+                    mouse1release()
+                end
+            end)
         end
     end
 end)
@@ -3267,7 +3282,7 @@ task.spawn(function()
                 local pollen = LocalPlayer:FindFirstChild("Pollen")
                 local capacity = LocalPlayer:FindFirstChild("Capacity")
                 if pollen and capacity and capacity.Value > 0 and pollen.Value >= capacity.Value then
-                    print("[Berlin v0.1.47] Pollen Full! Traveling smoothly to Hive...")
+                    print("[Berlin v0.1.48] Pollen Full! Traveling smoothly to Hive...")
                     travelToHiveConverter()
                     task.wait(3)
                 end
